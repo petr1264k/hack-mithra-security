@@ -30,7 +30,7 @@ import uvicorn
 from botocore.config import Config
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from openai import OpenAI
 from pydantic import BaseModel
 
@@ -347,6 +347,7 @@ def fetch_activity(owner, repo, fresh=False):
     if not fresh:
         cached = disk_get("act_" + sha(archive_key)) or bucket_get(archive_key)
         if cached:
+            cached["archive_key"] = archive_key
             return cached
     since = (dt.datetime.now(dt.UTC) - dt.timedelta(days=WINDOW_DAYS)).strftime("%Y-%m-%dT%H:%M:%SZ")
     info = gh(f"/repos/{owner}/{repo}") or {}
@@ -935,12 +936,13 @@ def api_replay():
 
 @app.get("/api/evidence")
 def api_evidence(key: str):
-    if not key.startswith(("evidence/", "reports/", "replay/")):
+    """Redirect to a one-hour presigned link for an evidence archive in Object Storage."""
+    if not key.startswith(("evidence/", "reports/", "replay/")) or ".." in key:
         raise HTTPException(400, "Unknown evidence key.")
     link = bucket_link(key)
     if not link:
         raise HTTPException(404, "No bucket connected.")
-    return {"url": link}
+    return RedirectResponse(link)
 
 
 def rescan_saved():

@@ -318,7 +318,7 @@ async function select(i) {
   if (d.score === null) html += `<div class="formula">${esc(d.note || 'Too little public conversation in the last 12 months to judge, so no score.')}</div>`;
   else {
     const parts = TYPES.filter(([t]) => b[t]).map(([t, n]) => `${n.toLowerCase()} ${b[t]}`).concat(d.combo ? [`${d.combo} for burnout plus pressure`] : []);
-    html += `<div class="formula clip">${d.score}${parts.length ? ' = ' + parts.join(' + ') : ''} · computed by code, not the model</div>`;
+    html += `<div class="formula clip">${d.score}${parts.length ? ' = ' + parts.join(' + ') : ''} · computed by code${d.archive_key ? ` · <a href="/api/evidence?key=${encodeURIComponent(d.archive_key)}" target="_blank" rel="noopener">evidence archive</a>` : ''}</div>`;
   }
   const sigs = [...(d.signals || [])].reverse();
   html += sigs.length ? sigs.map(alertCard).join('') : (d.score !== null ? '<div class="empty">No warning signals in the last 12 months.</div>' : '');
