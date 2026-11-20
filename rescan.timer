@@ -1,6 +1,6 @@
 # Runs rescan.service every night at 03:00 server time.
 [Unit]
-Description=Nightly xz Radar re-scan
+Description=Nightly Mithra Security re-scan
 
 [Timer]
 OnCalendar=*-*-* 03:00:00

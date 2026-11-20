@@ -1,6 +1,6 @@
 # Re-scans the projects people chose to watch, and records their risk history in PostgreSQL.
 [Unit]
-Description=xz Radar nightly re-scan
+Description=Mithra Security nightly re-scan
 After=network-online.target
 
 [Service]

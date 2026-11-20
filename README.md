@@ -1,6 +1,6 @@
-# <img src="logo.svg" width="32" height="32" alt=""> Mithra
+# <img src="logo.svg" width="32" height="32" alt=""> Mithra Security
 
-Mithra reads the public conversations around the open-source code your app depends on, and warns you when a project looks like it is being taken over, before any bad code exists.
+Mithra Security reads the public conversations around the open-source code your app depends on, and warns you when a project looks like it is being taken over, before any bad code exists.
 
 Built at **Build with Akamai Cloud: Seattle — AI Workshop & Buildathon**, November 20, 2026, GitHub Bellevue.
 
