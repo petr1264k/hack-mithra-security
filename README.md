@@ -1,4 +1,4 @@
-# Mithra
+# <img src="logo.svg" width="32" height="32" alt=""> Mithra
 
 Mithra reads the public conversations around the open-source code your app depends on, and warns you when a project looks like it is being taken over, before any bad code exists.
 

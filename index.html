@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Mithra</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Cpath d=%22M3.5 32 21 14.5H43L60.5 32 43 49.5H21Z%22 fill=%22none%22 stroke=%22%232fd27a%22 stroke-width=%225%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M26.5 22.5H37.5L43 32 37.5 41.5H26.5L21 32Z%22 fill=%22%232fd27a%22/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400&family=Sora:wght@300;600&display=swap" rel="stylesheet">
@@ -26,7 +27,8 @@
     border:1px solid rgba(47,210,122,.3); box-shadow:0 0 90px rgba(47,210,122,.14); }
 
   .top { display:flex; align-items:center; gap:22px; padding:12px 18px; border-bottom:1px solid var(--line); flex-wrap:wrap; }
-  .brand { font:600 18px/1 Sora, sans-serif; white-space:nowrap; }
+  .brand { font:600 18px/1 Sora, sans-serif; white-space:nowrap; display:flex; align-items:center; gap:8px; }
+  .brand svg { width:24px; height:24px; flex:none; }
   .brand span { color:var(--green); font-weight:300; }
   .nav button { background:none; border:0; padding:7px 12px; border-radius:8px; color:var(--dim); cursor:pointer; font-size:13px; }
   .nav button.on { color:var(--text); background:var(--panel2); box-shadow:inset 0 0 0 1px var(--line2); }
@@ -179,7 +181,8 @@
 
 <script>
 const NAME = ['Mithra', ''];  // the product name, in two parts: plain + green
-document.getElementById('brand').innerHTML = `${NAME[0]}<span>${NAME[1]}</span>`;
+const LOGO = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><path d="M3.5 32 21 14.5H43L60.5 32 43 49.5H21Z" fill="none" stroke="#2fd27a" stroke-width="5" stroke-linejoin="round"/><path d="M26.5 22.5H37.5L43 32 37.5 41.5H26.5L21 32Z" fill="#2fd27a"/></svg>';  // logo.svg: the watcher's eye, built from hexagons
+document.getElementById('brand').innerHTML = `${LOGO}<span style="color:inherit; font-weight:600">${NAME[0]}</span>`;
 document.title = NAME.join('');
 
 const $ = id => document.getElementById(id);
