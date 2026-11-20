@@ -232,6 +232,7 @@ function tween(ms, fn) {
 
 function tab(name) {
   for (const t of ['scan', 'replay']) { $(t).style.display = t === name ? '' : 'none'; $('tab-' + t).classList.toggle('on', t === name); }
+  history.replaceState(null, '', name === 'replay' ? '#replay' : report && report.id ? '#scan=' + report.id : location.pathname);
   if (name === 'replay' && !replay) loadReplay();
 }
 
@@ -594,7 +595,16 @@ function play() {
   requestAnimationFrame(frame);
 }
 
-loadRecent(true);
+// Links: #scan=41 opens saved scan 41, #replay opens the xz replay. Returns true when a scan was asked for.
+function route() {
+  const m = location.hash.match(/^#scan=(\d+)$/);
+  if (location.hash === '#replay') { tab('replay'); return false; }
+  if (!m) return false;
+  if (!report || report.id !== +m[1]) openScan(+m[1]).catch(() => { history.replaceState(null, '', location.pathname); loadRecent(true); });
+  return true;
+}
+addEventListener('hashchange', route);
+loadRecent(!route());
 </script>
 </body>
 </html>
