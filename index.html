@@ -97,6 +97,9 @@
   .alert .at b { font-weight:500; }
   .alert q { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; font-size:13px; }
   .alert.open q { -webkit-line-clamp:unset; }
+  .alert .why { display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden; font-size:12px; color:var(--dim); margin-top:3px; }
+  .alert .why b { font-weight:600; margin-right:4px; }
+  .alert.open .why { -webkit-line-clamp:unset; }
 
   .formula { font-size:12px; color:var(--dim); margin:0 0 10px; }
   .adopt { border:1px solid rgba(47,210,122,.45); background:rgba(47,210,122,.06); border-radius:10px; padding:9px 12px; margin-top:4px; font-size:13px; }
@@ -338,11 +341,15 @@ function ago(iso) {
   return m < 60 ? `${m}m ago` : m < 1440 ? `${Math.round(m / 60)}h ago` : `${Math.round(m / 1440)}d ago`;
 }
 
-// Two lines: who and when, then the quote. Click to expand a long quote.
+// Who and when, the quote, then why it was flagged and the points it adds. Click to expand.
+const POINTS = {pressure_campaign:20, control_handover:30, maintainer_burnout:20, xz_similarity:10};  // the same fixed weights as app.py
 function alertCard(s) {
-  return `<div class="alert" style="border-color:${TCOLOR[s.type]}" onclick="this.classList.toggle('open')" title="${esc(s.why || '')}">
+  const pts = Math.round(POINTS[s.type] * (s.strength ?? 1));
+  const why = (s.why || '').replace(/\b(in |from )?items? \d+/gi, 'another message');
+  return `<div class="alert" style="border-color:${TCOLOR[s.type]}" onclick="this.classList.toggle('open')">
     <div class="at"><b style="color:${TCOLOR[s.type]}">${TNAME[s.type]}</b> · ${esc(s.date)} · <a href="${esc(s.url)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">source</a> · ${esc(s.author)}${s.note ? ' (' + esc(s.note) + ')' : ''}</div>
-    <q>${esc(s.quote)}</q></div>`;
+    <q>${esc(s.quote)}</q>
+    <div class="why"><b style="color:${pts ? TCOLOR[s.type] : 'var(--faint)'}">${pts ? '+' + pts : 'not counted'}</b>${esc(why)}</div></div>`;
 }
 
 // ---------- dependencies
