@@ -68,7 +68,7 @@ def _gh_token():
 
 
 GH_TOKEN = _gh_token()
-http = httpx.Client(timeout=25, follow_redirects=True, headers={"User-Agent": "xz-radar-hackathon"})
+http = httpx.Client(timeout=25, follow_redirects=True, headers={"User-Agent": "mithra-security"})
 
 
 def sha(text):
