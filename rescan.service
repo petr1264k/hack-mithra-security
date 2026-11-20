@@ -1,0 +1,10 @@
+# Re-scans the projects people chose to watch, and records their risk history in PostgreSQL.
+[Unit]
+Description=xz Radar nightly re-scan
+After=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/root
+Environment=HOME=/root
+ExecStart=/root/.local/bin/uv run /root/app.py --rescan

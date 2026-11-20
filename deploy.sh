@@ -13,11 +13,15 @@ grep -v -E '^(LINODE_TOKEN|LINODE_ROOT_PASS)=|API token' .env > .env.server
 chmod 600 .env.server
 
 scp -q .env.server "root@$IP:.env"
-scp -q app.py index.html app.service "root@$IP:"
-ssh "root@$IP" 'cp app.service /etc/systemd/system/ && systemctl daemon-reload && systemctl enable -q app && systemctl restart app'
+scp -q app.py index.html app.service rescan.service rescan.timer "root@$IP:"
+ssh "root@$IP" 'mkdir -p data .cache'
+scp -q data/xz_replay.json "root@$IP:data/"
+# The cache holds public GitHub data and model results, so the server does not spend the shared AI key again.
+if [ -d .cache ]; then tar -czf - .cache | ssh "root@$IP" 'tar -xzf -'; fi
+ssh "root@$IP" 'cp app.service rescan.service rescan.timer /etc/systemd/system/ && systemctl daemon-reload && systemctl enable -q app && systemctl enable -q --now rescan.timer && systemctl restart app'
 
 echo "Deployed. Waiting for the app..."
-for _ in $(seq 1 30); do
+for _ in $(seq 1 60); do
   if curl -s -m 3 "http://$IP/health"; then echo; echo "Live at http://$IP"; exit 0; fi
   sleep 2
 done

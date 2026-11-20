@@ -15,3 +15,6 @@ instructor/
 
 # Server-only copy of .env, made by deploy.sh
 .env.server
+
+# Local cache of GitHub and model responses
+.cache/

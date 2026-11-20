@@ -1,0 +1,10 @@
+# Runs rescan.service every night at 03:00 server time.
+[Unit]
+Description=Nightly xz Radar re-scan
+
+[Timer]
+OnCalendar=*-*-* 03:00:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target

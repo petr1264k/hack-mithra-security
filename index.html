@@ -3,133 +3,219 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Akamai Cloud workshop demo</title>
-<link rel="icon" href="data:,">
+<title>xz Radar</title>
 <style>
-  :root { --navy: #002f6c; --blue: #00a4eb; --edge: #8f9bab; }  /* Akamai navy and blue */
-  body { font: 17px/1.5 system-ui, sans-serif; max-width: 1080px; margin: 2rem auto; padding: 0 1rem; color: #1b1b1b; background: #f5f7fa; }
-  h1 { font-size: 1.7rem; margin: 0; color: var(--navy); } h2 { font-size: 1.1rem; margin-top: 0; } .muted { color: #555; }
-  a { color: var(--navy); } :focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
-  #status { display: flex; flex-wrap: wrap; gap: .5rem; margin: 1rem 0 1.5rem; }
-  .badge { padding: .2rem .7rem; border-radius: 999px; font-size: .85rem; background: #e3e7ec; }
-  .connected, .configured { background: #d7f0df; } .error { background: #fbdcdc; }
-  .grid { display: grid; grid-template-columns: 2fr 1fr; gap: 1rem; }
-  section { background: #fff; border: 1px solid #cfd6df; border-radius: 8px; padding: 1.1rem; } .wide { grid-column: 1 / -1; }
-  textarea, select { font: inherit; padding: .5rem; border: 1px solid var(--edge); border-radius: 6px; background: #fff; }
-  textarea { width: 100%; box-sizing: border-box; min-height: 4.5rem; } li { margin-bottom: .6rem; }
-  button { font: inherit; font-weight: 600; padding: .5rem 1.1rem; border: 0; border-radius: 6px; background: var(--navy); color: #fff; cursor: pointer; }
-  button:hover { background: #0a4a9f; } input[type=file] { font: inherit; font-size: .9rem; max-width: 100%; }
-  ::file-selector-button { font: inherit; padding: .4rem .8rem; margin-right: .6rem; border: 1px solid var(--edge); border-radius: 6px; background: #fff; cursor: pointer; }
-  #answer { white-space: pre-wrap; margin-top: 1rem; padding: .8rem 1rem; border-left: 4px solid var(--blue); background: #eef7fd; }
-  #answer:empty { display: none; }
-  @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } }
+  :root { --bg:#0d1117; --panel:#161b22; --line:#30363d; --text:#e6edf3; --dim:#8b949e; --green:#3fb950; --yellow:#d29922; --red:#f85149; --blue:#58a6ff; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+  header { padding:20px 24px 8px; border-bottom:1px solid var(--line); }
+  h1 { margin:0; font-size:26px; } h1 span { color:var(--red); }
+  .tag { color:var(--dim); margin:4px 0 12px; }
+  nav button { background:none; border:none; color:var(--dim); font-size:15px; padding:8px 14px; cursor:pointer; border-bottom:2px solid transparent; }
+  nav button.on { color:var(--text); border-color:var(--red); }
+  main { padding:20px 24px; max-width:1200px; margin:0 auto; }
+  .row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  input[type=text] { flex:1; min-width:260px; padding:10px 12px; background:var(--panel); border:1px solid var(--line); border-radius:6px; color:var(--text); font-size:15px; }
+  button.go { padding:10px 18px; background:#238636; border:1px solid #2ea043; color:white; border-radius:6px; font-weight:600; cursor:pointer; }
+  button.ghost { padding:8px 12px; background:var(--panel); border:1px solid var(--line); color:var(--text); border-radius:6px; cursor:pointer; }
+  button:disabled { opacity:.5; cursor:wait; }
+  .chips { margin-top:8px; color:var(--dim); font-size:13px; } .chips a { color:var(--blue); cursor:pointer; margin-right:10px; }
+  table { width:100%; border-collapse:collapse; margin-top:18px; }
+  th, td { text-align:left; padding:9px 10px; border-bottom:1px solid var(--line); }
+  th { color:var(--dim); font-weight:500; font-size:13px; }
+  tbody tr { cursor:pointer; } tbody tr:hover { background:var(--panel); }
+  .lvl { font-weight:700; } .green { color:var(--green); } .yellow { color:var(--yellow); } .red { color:var(--red); } .unknown { color:var(--dim); }
+  .muted { color:var(--dim); font-size:13px; }
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:16px; margin-top:16px; }
+  .sig { border-left:3px solid var(--line); padding:6px 12px; margin:10px 0; }
+  .sig.maintainer_burnout { border-color:var(--yellow); } .sig.pressure_campaign { border-color:var(--red); }
+  .sig.control_handover { border-color:#bc8cff; } .sig.xz_similarity { border-color:var(--blue); }
+  .sig q { display:block; font-style:italic; margin:4px 0; }
+  .pill { display:inline-block; font-size:12px; padding:1px 8px; border-radius:10px; background:#21262d; border:1px solid var(--line); margin-right:6px; }
+  a { color:var(--blue); }
+  .adopt { border-color:#2ea043; background:#0f2417; }
+  .adopt img { width:56px; height:56px; border-radius:50%; float:left; margin-right:14px; }
+  .meterwrap { display:flex; gap:24px; align-items:center; flex-wrap:wrap; }
+  .meter { flex:1; min-width:280px; height:34px; background:#21262d; border-radius:17px; overflow:hidden; border:1px solid var(--line); }
+  .meter div { height:100%; width:0; background:var(--green); transition: width .35s, background .35s; }
+  .big { font-size:54px; font-weight:800; min-width:170px; }
+  .month { font-size:30px; font-weight:700; }
+  svg { width:100%; height:180px; display:block; margin-top:14px; }
+  .feed { max-height:360px; overflow:auto; }
+  .err { color:var(--red); margin-top:10px; }
+  .spinner { display:inline-block; width:14px; height:14px; border:2px solid var(--dim); border-top-color:transparent; border-radius:50%; animation:spin 1s linear infinite; vertical-align:middle; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .rules { font-size:13px; color:var(--dim); }
 </style>
 </head>
 <body>
-<h1>Ask about your files</h1>
-<p class="muted">Ask the model about a file in Object Storage, and see past questions from PostgreSQL.</p>
-<div id="status"></div>
-<div class="grid">
-  <section>
-    <h2>Ask</h2>
-    <form id="ask">
-      <textarea id="question" required placeholder="Give me three ideas for a hackathon app that uses a model and file storage."></textarea>
-      <p><label>About the file <select id="file"><option value="">no file</option></select></label>
-        <button>Ask</button></p>
-    </form>
-    <div id="answer"></div>
-  </section>
-  <section id="files-panel">
-    <h2>Files</h2>
-    <ul id="files"></ul>
-    <form id="upload"><input type="file" name="file" accept=".txt,.md,text/plain" required>
-      <p><button>Upload</button> <span class="muted">Text files, up to 1 MB</span></p></form>
-  </section>
-  <section id="history-panel" class="wide">
-    <h2>History</h2>
-    <ol id="history"></ol>
-  </section>
-</div>
+<header>
+  <h1>xz <span>Radar</span></h1>
+  <div class="tag">Reads the public conversations around the open-source code you depend on, and warns when a project looks like it is being taken over, before any bad code exists.</div>
+  <nav><button id="tab-scan" class="on" onclick="tab('scan')">Scan a repo</button><button id="tab-replay" onclick="tab('replay')">xz replay (2021–2024)</button></nav>
+</header>
+<main>
+<section id="scan">
+  <div class="row">
+    <input type="text" id="repo" placeholder="https://github.com/owner/repo" value="https://github.com/akamai-developers/akamai-workshop-seattle-hackathon">
+    <button class="go" id="scanbtn" onclick="runScan()">Scan dependencies</button>
+    <button class="ghost" onclick="saveRepo()" title="Re-checked every night by a timer on the Linode">Watch nightly</button>
+  </div>
+  <div class="chips" id="recent"></div>
+  <div id="status" class="muted"></div>
+  <div id="results"></div>
+  <div id="detail"></div>
+  <p class="rules">Ground rules: public data only, nothing is ever posted anywhere, and a flag describes a situation, not a person. The model tags signals and must quote the source; code drops any quote it cannot find in the source and computes the score with fixed weights.</p>
+</section>
+<section id="replay" style="display:none">
+  <div class="row"><button class="go" id="playbtn" onclick="play()">▶ Play the xz-devel mailing list</button>
+    <span class="muted" id="replayinfo">Loading…</span></div>
+  <div class="card">
+    <div class="meterwrap"><div class="month" id="rmonth">—</div><div class="big" id="rscore">—</div>
+      <div class="meter"><div id="rbar"></div></div></div>
+    <svg id="chart" viewBox="0 0 1000 180" preserveAspectRatio="none"></svg>
+    <div class="muted" id="rnote"></div>
+  </div>
+  <div class="card"><b>Signals as they appeared</b><div class="feed" id="rfeed"></div></div>
+</section>
+</main>
 <script>
-const LABS = "https://github.com/akamai-developers/akamai-workshop-seattle-hackathon/tree/main/";
-const $ = (id) => document.getElementById(id);
-const item = (tag, text) => Object.assign(document.createElement(tag), { textContent: text });
+const $ = id => document.getElementById(id);
+const EMOJI = {green:'🟢', yellow:'🟡', red:'🔴', unknown:'⚪'};
+const NAMES = {maintainer_burnout:'Maintainer burnout', pressure_campaign:'Pressure campaign', control_handover:'Control handover', xz_similarity:'Similar to xz 2022 emails'};
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let report = null, replay = null, timer = null;
 
-async function getJSON(url, options) {
-  const response = await fetch(url, options);
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(typeof data.detail === "string" ? data.detail : response.statusText);
-  return data;
+function tab(name) {
+  for (const t of ['scan','replay']) { $(t).style.display = t === name ? '' : 'none'; $('tab-'+t).classList.toggle('on', t === name); }
+  if (name === 'replay' && !replay) loadReplay();
 }
 
-function notConnected(panel, service, lab) {
-  const note = item("p", `${service} is not connected. Fill in its lines in .env and restart the app. `);
-  note.className = "muted";
-  note.append(Object.assign(document.createElement("a"), { href: LABS + lab, textContent: `Open ${lab}` }));
-  panel.replaceChildren(panel.querySelector("h2"), note);
+async function api(path, opts) {
+  const r = await fetch(path, opts);
+  const body = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(body.detail || r.statusText);
+  return body;
 }
 
-async function loadStatus() {
-  const health = await getJSON("/health");
-  $("status").replaceChildren(...Object.entries(health).map(([name, state]) => {
-    const badge = item("span", `${name.replace("_", " ")}: ${state}`);
-    badge.className = "badge " + state.split(":")[0].replace(" ", "-");
-    return badge;
-  }));
-  return health;
+async function runScan() {
+  const repo = $('repo').value.trim();
+  $('scanbtn').disabled = true; $('detail').innerHTML = ''; $('results').innerHTML = '';
+  $('status').innerHTML = '<span class="spinner"></span> Finding dependencies, reading 12 months of public issues and comments, tagging signals…';
+  try { report = await api('/api/scan', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({repo})}); render(); loadRecent(); }
+  catch (e) { $('status').innerHTML = `<div class="err">${esc(e.message)}</div>`; }
+  $('scanbtn').disabled = false;
 }
 
-async function loadFiles(health) {
-  if (health.object_storage === "not set") return notConnected($("files-panel"), "Object Storage", "04-object-storage");
-  const keys = await getJSON("/files");
-  $("files").replaceChildren(...keys.map((key) => item("li", key)));
-  const chosen = $("file").value;
-  $("file").replaceChildren(new Option("no file", ""), ...keys.map((key) => new Option(key, key)));
-  $("file").value = keys.includes(chosen) ? chosen : "";
+function render() {
+  const deps = report.dependencies;
+  $('status').innerHTML = `<b>${esc(report.repo)}</b>: ${deps.length} dependencies scanned ${report.skipped.length ? `(${report.skipped.length} more not scanned: ${esc(report.skipped.join(', '))})` : ''}`
+    + (report.report_link ? ` · <a href="${report.report_link}" target="_blank">full evidence report (Object Storage)</a>` : '')
+    + (report.id ? ` · saved as scan #${report.id} in PostgreSQL` : '');
+  if (!deps.length) { $('results').innerHTML = '<div class="card">No dependencies found. We read requirements.txt, pyproject.toml, package.json and PEP 723 script headers.</div>'; return; }
+  $('results').innerHTML = `<table><thead><tr><th>Risk</th><th>Package</th><th>Source repo</th><th>Signals</th><th>Found in</th></tr></thead><tbody>${
+    deps.map((d, i) => `<tr onclick="show(${i})"><td class="lvl ${d.level}">${EMOJI[d.level]} ${d.score ?? '—'} <span class="muted">${d.level === 'unknown' ? esc(d.label) : ''}</span></td>
+      <td><b>${esc(d.package)}</b> <span class="muted">${d.ecosystem}</span></td>
+      <td>${d.repo ? `<a href="https://github.com/${esc(d.repo)}" target="_blank" onclick="event.stopPropagation()">${esc(d.repo)}</a>` : '<span class="muted">none listed</span>'}</td>
+      <td>${(d.signals||[]).length ? Object.entries(count(d.signals)).map(([t,n]) => `<span class="pill">${NAMES[t]} ×${n}</span>`).join('') : '<span class="muted">none</span>'}${d.adopt ? ' <span class="pill" style="border-color:#2ea043">💚 adopt</span>' : ''}</td>
+      <td class="muted">${esc(d.source)}</td></tr>`).join('')}</tbody></table>`;
+  const worst = deps.findIndex(d => d.level === 'red' || d.level === 'yellow');
+  show(worst >= 0 ? worst : 0);
 }
 
-async function loadHistory(health) {
-  if (health.database === "not set") return notConnected($("history-panel"), "The database", "03-database");
-  const rows = await getJSON("/history");
-  $("history").replaceChildren(...rows.map((row) => {
-    const entry = item("li", "");
-    entry.append(item("strong", row.question + (row.file ? ` (${row.file})` : "")), item("div", row.answer));
-    return entry;
-  }));
+function count(signals) { const c = {}; for (const s of signals) c[s.type] = (c[s.type]||0)+1; return c; }
+
+function sigHtml(s) {
+  return `<div class="sig ${s.type}"><span class="pill">${NAMES[s.type]}</span><span class="muted">${esc(s.date)} · ${esc(s.author)}${s.note ? ' · '+esc(s.note) : ''}${s.similarity ? ' · similarity '+s.similarity : ''}</span>
+    <q>${esc(s.quote)}</q><span class="muted">${esc(s.why)}</span> · <a href="${esc(s.url)}" target="_blank">source</a></div>`;
 }
 
-async function refresh() {
-  const health = await loadStatus();
-  const report = (panel) => (error) => panel.append(item("p", `Could not load: ${error.message}`));
-  await Promise.all([loadFiles(health).catch(report($("files-panel"))),
-                     loadHistory(health).catch(report($("history-panel")))]);
-}
-
-$("ask").addEventListener("submit", async (event) => {
-  event.preventDefault();
-  $("answer").textContent = "Waiting for the model...";
-  try {
-    const data = await getJSON("/ask", { method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ question: $("question").value, file: $("file").value || null }) });
-    $("answer").textContent = data.answer;
-    refresh();
-  } catch (error) {
-    $("answer").textContent = `Error: ${error.message}`;
+async function show(i) {
+  const d = report.dependencies[i];
+  const b = d.breakdown || {};
+  let html = `<div class="card"><h2 style="margin:0">${EMOJI[d.level]} ${esc(d.package)} <span class="muted">${d.repo ? esc(d.repo) : ''}</span></h2>`;
+  if (d.score === null) html += `<p><b>Not enough data.</b> ${esc(d.note || 'Too little public conversation to judge, so we do not guess.')}</p>`;
+  else html += `<p>Risk <b class="${d.level}">${d.score}/100</b> = burnout ${b.maintainer_burnout||0} + pressure ${b.pressure_campaign||0} + handover ${b.control_handover||0} + xz-similarity ${b.xz_similarity||0}${d.combo ? ' + '+d.combo+' (burnout and pressure together)' : ''}.
+    <span class="muted">Computed by code from ${d.item_count} public items; ${d.rejected_quotes||0} model quotes rejected because they were not in the source.</span></p>`;
+  html += (d.signals||[]).length ? d.signals.map(sigHtml).join('') : (d.score !== null ? '<p class="muted">No warning signals in the last 12 months.</p>' : '');
+  html += `<div id="hist" class="muted"></div></div>`;
+  if (d.adopt) {
+    const a = d.adopt;
+    html += `<div class="card adopt"><img src="${esc(a.avatar)}" alt=""><h3 style="margin:0">💚 Adopt a maintainer</h3>
+      <p><b>${esc(a.login)}</b> wrote ${Math.round(a.share*100)}% of the last year's commits to ${esc(d.package)} (${a.commits} of ${a.total_commits}). ${a.burnout ? 'They have said publicly they are stretched thin. ' : ''}This person is carrying part of your app alone.</p>
+      ${a.funding.length ? '<p>Support them: ' + a.funding.map(f => `<a href="${esc(f.url)}" target="_blank">${esc(f.platform)}</a>`).join(' · ') + '</p>' : '<p class="muted">No sponsor link published. A thank-you issue or a reviewed pull request helps too.</p>'}
+      ${a.help_wanted.length ? '<p>Open "help wanted" issues:</p><ul>' + a.help_wanted.map(h => `<li><a href="${esc(h.url)}" target="_blank">${esc(h.title)}</a></li>`).join('') + '</ul>' : ''}
+      <p class="muted">Well-supported maintainers are the main defense against takeovers like xz.</p></div>`;
   }
-});
-
-$("upload").addEventListener("submit", async (event) => {
-  event.preventDefault();
+  $('detail').innerHTML = html;
   try {
-    await getJSON("/files", { method: "POST", body: new FormData($("upload")) });
-    $("upload").reset();
-    refresh();
-  } catch (error) {
-    alert(`Upload failed: ${error.message}`);
-  }
-});
+    const h = await api(`/api/history?repo=${encodeURIComponent(report.repo)}&package=${encodeURIComponent(d.package)}`);
+    if (h.length) $('hist').innerHTML = 'Risk history (PostgreSQL): ' + h.slice(-12).map(x => `${EMOJI[x.level]} ${x.score ?? '—'} <small>${x.at.slice(0,16).replace('T',' ')}</small>`).join(' → ');
+  } catch (e) {}
+}
 
-refresh();
+async function loadRecent() {
+  try {
+    const [scans, saved] = await Promise.all([api('/api/scans'), api('/api/saved')]);
+    const seen = new Set();
+    const recent = scans.filter(s => !seen.has(s.repo) && seen.add(s.repo)).slice(0, 6);
+    $('recent').innerHTML = (recent.length ? 'Recent: ' + recent.map(s => `<a onclick="openScan(${s.id})">${esc(s.repo)}</a>`).join('') : '')
+      + (saved.length ? ' · Watched nightly: ' + saved.map(esc).join(', ') : '');
+  } catch (e) {}
+}
+
+async function openScan(id) { report = await api('/api/scans/' + id); $('repo').value = 'https://github.com/' + report.repo; render(); }
+
+async function saveRepo() {
+  try { const r = await api('/api/save', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({repo: $('repo').value})}); $('status').textContent = `${r.saved} will be re-scanned every night.`; loadRecent(); }
+  catch (e) { $('status').innerHTML = `<div class="err">${esc(e.message)}</div>`; }
+}
+
+// ---------------- replay
+async function loadReplay() {
+  $('replayinfo').innerHTML = '<span class="spinner"></span> Reading the xz-devel archive month by month…';
+  try {
+    replay = await api('/api/replay');
+    $('replayinfo').textContent = `${replay.message_count} public messages from xz-devel, read by ${replay.model}. Backdoor shipped Feb 2024; disclosed Mar 29, 2024.`;
+    drawChart(-1);
+  } catch (e) { $('replayinfo').innerHTML = `<span class="err">${esc(e.message)}</span>`; }
+}
+
+function color(level) { return {green:'#3fb950', yellow:'#d29922', red:'#f85149', unknown:'#8b949e'}[level]; }
+
+function drawChart(upto) {
+  const t = replay.timeline, w = 1000 / t.length;
+  let s = '';
+  t.forEach((m, i) => {
+    const h = i <= upto ? (m.score || 0) * 1.5 : 0;
+    s += `<rect x="${i*w+1}" y="${160-h}" width="${w-2}" height="${h}" fill="${color(m.level)}" opacity="${i <= upto ? 1 : .15}"></rect>`;
+    if (i > upto) s += `<rect x="${i*w+1}" y="155" width="${w-2}" height="5" fill="#30363d"></rect>`;
+    if (m.month.endsWith('-01') || i === 0) s += `<text x="${i*w+2}" y="176" fill="#8b949e" font-size="12">${m.month.slice(0,4)}</text>`;
+    if (m.month === replay.backdoor) s += `<line x1="${i*w}" x2="${i*w}" y1="0" y2="160" stroke="#f85149" stroke-dasharray="4"></line><text x="${i*w-120}" y="14" fill="#f85149" font-size="12">backdoor ships →</text>`;
+  });
+  $('chart').innerHTML = s;
+}
+
+function step(i) {
+  const m = replay.timeline[i];
+  $('rmonth').textContent = m.month;
+  $('rscore').innerHTML = `<span class="${m.level}">${EMOJI[m.level]} ${m.score ?? 0}</span>`;
+  $('rbar').style.width = (m.score || 0) + '%'; $('rbar').style.background = color(m.level);
+  drawChart(i);
+  for (const s of m.new_signals) $('rfeed').insertAdjacentHTML('afterbegin', sigHtml(s));
+  if (m.month === replay.first_red) {
+    const months = (2024 - +m.month.slice(0,4)) * 12 + (2 - +m.month.slice(5,7));
+    $('rnote').innerHTML = `<b class="red">Red in ${m.month}: ${months} months before the backdoor shipped.</b> Score = code-weighted signals from the last 12 months; a handover of control stays counted.`;
+  }
+}
+
+function play() {
+  clearInterval(timer); $('rfeed').innerHTML = ''; $('rnote').textContent = '';
+  let i = 0; $('playbtn').disabled = true;
+  timer = setInterval(() => { step(i++); if (i >= replay.timeline.length) { clearInterval(timer); $('playbtn').disabled = false; } }, 600);
+}
+
+loadRecent();
 </script>
 </body>
 </html>

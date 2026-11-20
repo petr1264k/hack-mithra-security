@@ -1,0 +1,412 @@
+{
+  "source": "xz-devel mailing list (public archive)",
+  "archive_url": "https://www.mail-archive.com/xz-devel@tukaani.org/",
+  "notes": "Collected from the date-sorted mail-archive.com xz-devel index (msg00509-msg00673) plus Andres Freund's oss-security post on openwall.com; each text was machine-checked as an exact substring of the fetched message body (quoted reply lines removed, hard line wraps and runs of whitespace collapsed to single spaces). Original spelling is preserved.",
+  "messages": [
+    {
+      "date": "2021-10-05",
+      "author": "Alexander Bluhm",
+      "subject": "[xz-devel] [PATCH] xz: Avoid fchown(2) failure.",
+      "url": "https://www.mail-archive.com/xz-devel@tukaani.org/msg00509.html",
+      "text": "OpenBSD does not allow to change the group of a file if the user does not belong to this group. In contrast to Linux, OpenBSD also fails if the new group is the same as the old one. Do not call fchown(2) in this case, it would change nothing anyway.",
+      "kind": "patch",
+      "verified": true
+    },
+    {
+      "date": "2021-10-28",
+      "author": "Lasse Collin",
+      "subject": "[xz-devel] XZ Utils 5.3.2alpha",
+      "url": "https://www.mail-archive.com/xz-devel@tukaani.org/msg00511.html",
+      "text": "XZ Utils 5.3.2alpha is available at <https://tukaani.org/xz/>. Here is an extract from the NEWS file: This release was made on short notice so that recent erofs-utils can be built with LZMA support without needing a snapshot from xz.git.",
+      "kind": "release",
+      "verified": true
+    },
+    {
+      "date": "2021-10-29",
+      "author": "Jia Tan",
+      "subject": "[xz-devel] [PATCH] xz: Added .editorconfig file for simple style guide encouragement",
+      "url": "https://www.mail-archive.com/xz-devel@tukaani.org/msg00512.html",
+      "text": "This patch adds a .editorconfig to the root directory. The .editorconfig file integrates into most text editors and IDE's to enforce basic styling. I chose the configurations from the project's current styling.",
+      "kind": "patch",
+      "verified": true
+    },
+    {
+      "date": "2021-11-06",
+      "author": "Sebastian Andrzej Siewior",
+      "subject": "[xz-devel] Multithreaded decompression for XZ Utils.",
+      "url": "https://www.mail-archive.com/xz-devel@tukaani.org/msg00513.html",
+      "text": "just spotted that Christmas is around the corner. I *think* that I've been a good boy over the year. I plan to keep it that way just to be sure. Not trying to push my luck here but what are my chances to find parallel decompression in xz-utils under the christmas tree?",
+      "kind": "other",
+      "verified": true
+    },
+    {
+      "date": "2021-11-10",
+      "author": "Jia Tan",
+      "subject": "[xz-devel] [PATCH] xz: Converted test framework to use Seatest",
+      "url": "https://www.mail-archive.com/xz-devel@tukaani.org/msg00514.html",
+      "text": "This patch converts the existing test framework to use an open source C testing framework called Seatest. For now, I only converted the existing tests. I wanted your feedback before I used this framework to add new tests. Let me know what changes you would like to see.",
+      "kind": "patch",
+      "verified": true
+    },
+    {
+      "date": "2021-11-29",
+      "author": "Jia Tan",
+      "subject": "[xz-devel] [PATCH] xz: Multithreaded mode now always uses stream_encoder_mt to ensure reproducible builds",
+      "url": "https://www.mail-archive.com/xz-devel@tukaani.org/msg00519.html",
+      "text": "This patch addresses the issues with reproducible builds when using multithreaded xz. Previously, specifying --threads=1 instead of --threads=[n>1] creates different output. Now, setting any number of threads forces multithreading mode, even if there is only 1 worker thread.",
+      "kind": "patch",
+      "verified": true
+    },
+    {
+      "date": "2021-12-21",
+      "author": "Jia Tan",
+      "subject": "[xz-devel] XZ memory usage limiting for --threads=0",
+      "url": "https://www.mail-archive.com/xz-devel@tukaani.org/msg00525.html",
+      "text": "This patch adds memory limiting in xz when --threads=0 is specified.",
+      "kind": "patch",
+      "verified": true
+    },
+    {
+      "date": "2022-01-08",
+      "author": "Jean-Pierre Giraud",
+      "subject": "[xz-devel] xz-utils-man.po, French translation",
+      "url": "https://www.mail-archive.com/xz-devel@tukaani.org/msg00527.html",
+      "text": "Please find attached the french translation of the xz-utils manpage done by \"bubu\" and proofread by the debian-l10n-french mailing list contributors. I think that this new translation could be included in a future release.",
+      "kind": "other",
+      "verified": true
+    },
+    {
+      "date": "2022-03-10",
+      "author": "Jia Tan",
+      "subject": "Re: [xz-devel] [PATCH v3] liblzma: Add multi-threaded decoder",
+      "url": "https://www.mail-archive.com/xz-devel@tukaani.org/msg00540.html",
+      "text": "Thanks for doing this testing! Looks like the threading scales fairly well on large files like this. I don't have a machine with resources like this, so I am glad you were able to do this. I started writing tests in the new framework and I found one bug and one issue.",
+      "kind": "bug",
+      "verified": true
+    },
+    {
+      "date": "2022-04-07",
+      "author": "Lasse Collin",
+      "subject": "[xz-devel] xzgrep security fix for XZ Utils <= 5.2.5, 5.3.2alpha (ZDI-CAN-16587)",
+      "url": "https://www.mail-archive.com/xz-devel@tukaani.org/msg00551.html",
+      "text": "Malicious filenames can make xzgrep to write to arbitrary files or (with a GNU sed extension) lead to arbitrary code execution. xzgrep from XZ Utils versions up to and including 5.2.5 are affected. 5.3.1alpha and 5.3.2alpha are affected as well. This patch works for all of them.",
+      "kind": "bug",
+      "verified": true
+    },
+    {
+      "date": "2022-04-19",
+      "author": "Jia Tan",
+      "subject": "[xz-devel] [PATCH] String to filter and filter to string",
+      "url": "https://www.mail-archive.com/xz-devel@tukaani.org/msg00553.html",
+      "text": "These patches add lzma_str_to_filters and lzma_filters_to_str to liblzma and add a new \"-s, --filters\" option to xz.",
+      "kind": "patch",
+      "verified": true
+    },
+    {
+      "date": "2022-04-27",
+      "author": "Jigar Kumar",
+      "subject": "Re: [xz-devel] [PATCH] String to filter and filter to string",
+      "url": "https://www.mail-archive.com/xz-devel@tukaani.org/msg00555.html",
+      "text": "I did not test your codes, but if they work then I think the format only needs minor adjustments I suggest. Your efforts are good but based on the slow release schedule it will unfortunatly be years until the community actually gets this quality of life feature.",
+      "kind": "pressure",
+      "verified": true
+    },
+    {
+      "date": "2022-04-28",
+      "author": "jiat0218",
+      "subject": "Re: [xz-devel] [PATCH] String to filter and filter to string",
+      "url": "https://www.mail-archive.com/xz-devel@tukaani.org/msg00556.html",
+      "text": "The next alpha release should be coming this year so I don't think it will be as long as you think until it is in a stable release. The contributors to this project are hobbyists so we can't dedicate 40+ hours a week for fast releases of high quality.",
+      "kind": "other",
+      "verified": true
+    },
+    {
+      "date": "2022-04-28",
+      "author": "Jigar Kumar",
+      "subject": "Re: [xz-devel] [PATCH] String to filter and filter to string",
+      "url": "https://www.mail-archive.com/xz-devel@tukaani.org/msg00557.html",
+      "text": "Patches spend years on this mailing list. 5.2.0 release was 7 years ago. There is no reason to think anything is coming soon.",
+      "kind": "pressure",
+      "verified": true
+    },
+    {
+      "date": "2022-05-10",
+      "author": "Dennis Ens",
+      "subject": "Re: [xz-devel] xz-java and newer java",
+      "url": "https://www.mail-archive.com/xz-devel@tukaani.org/msg00560.html",
+      "text": "+1 Any updates on this?",
+      "kind": "pressure",
+      "verified": true
+    },
+    {
+      "date": "2022-05-19",
+      "author": "Dennis Ens",
+      "subject": "[xz-devel] XZ for Java",
+      "url": "https://www.mail-archive.com/xz-devel@tukaani.org/msg00562.html",
+      "text": "Is XZ for Java still maintained? I asked a question here a week ago and have not heard back. When I view the git log I can see it has not updated in over a year.",
+      "kind": "pressure",
+      "verified": true
+    },
+    {
+      "date": "2022-05-19",
+      "author": "Lasse Collin",
+      "subject": "Re: [xz-devel] XZ for Java",
+      "url": "https://www.mail-archive.com/xz-devel@tukaani.org/msg00563.html",
+      "text": "Jia Tan has helped me off-list with XZ Utils and he might have a bigger role in the future at least with XZ Utils. It's clear that my resources are too limited (thus the many emails waiting for replies) so something has to change in the long term.",
+      "kind": "maintainer_reply",
+      "verified": true
+    },
+    {
+      "date": "2022-05-27",
+      "author": "Jigar Kumar",
+      "subject": "Re: [xz-devel] [PATCH] String to filter and filter to string",
+      "url": "https://www.mail-archive.com/xz-devel@tukaani.org/msg00565.html",
+      "text": "Over 1 month and no closer to being merged. Not a suprise.",
+      "kind": "pressure",
+      "verified": true
+    },
+    {
+      "date": "2022-06-07",
+      "author": "Jigar Kumar",
+      "subject": "Re: [xz-devel] XZ for Java",
+      "url": "https://www.mail-archive.com/xz-devel@tukaani.org/msg00566.html",
+      "text": "Progress will not happen until there is new maintainer. XZ for C has sparse commit log too. Dennis you are better off waiting until new maintainer happens or fork yourself. Submitting patches here has no purpose these days. The current maintainer lost interest or doesn't care to maintain anymore. It is sad to see for a repo like this.",
+      "kind": "pressure",
+      "verified": true
+    },
+    {
+      "date": "2022-06-08",
+      "author": "Lasse Collin",
+      "subject": "Re: [xz-devel] XZ for Java",
+      "url": "https://www.mail-archive.com/xz-devel@tukaani.org/msg00567.html",
+      "text": "I haven't lost interest but my ability to care has been fairly limited mostly due to longterm mental health issues but also due to some other things. Recently I've worked off-list a bit with Jia Tan on XZ Utils and perhaps he will have a bigger role in the future, we'll see. It's also good to keep in mind that this is an unpaid hobby project.",
+      "kind": "maintainer_reply",
+      "verified": true
+    },
+    {
+      "date": "2022-06-14",
+      "author": "Jigar Kumar",
+      "subject": "Re: [xz-devel] XZ for Java",
+      "url": "https://www.mail-archive.com/xz-devel@tukaani.org/msg00568.html",
+      "text": "With your current rate, I very doubt to see 5.4.0 release this year. The only progress since april has been small changes to test code. You ignore the many patches bit rotting away on this mailing list. Right now you choke your repo. Why wait until 5.4.0 to change maintainer? Why delay what your repo needs?",
+      "kind": "pressure",
+      "verified": true
+    },
+    {
+      "date": "2022-06-21",
+      "author": "Dennis Ens",
+      "subject": "Re: [xz-devel] XZ for Java",
+      "url": "https://www.mail-archive.com/xz-devel@tukaani.org/msg00569.html",
+      "text": "I am sorry about your mental health issues, but its important to be aware of your own limits. I get that this is a hobby project for all contributors, but the community desires more. Why not pass on maintainership for XZ for C so you can give XZ for Java more attention? Or pass on XZ for Java to someone else to focus on XZ for C? Trying to maintain both means that neither are maintained well.",
+      "kind": "pressure",
+      "verified": true
+    },
+    {
+      "date": "2022-06-22",
+      "author": "Jigar Kumar",
+      "subject": "Re: [xz-devel] [PATCH] String to filter and filter to string",
+      "url": "https://www.mail-archive.com/xz-devel@tukaani.org/msg00570.html",
+      "text": "Is there any progress on this? Jia I see you have recent commits. Why can't you commit this yourself?",
+      "kind": "pressure",
+      "verified": true
+    },
+    {
+      "date": "2022-06-29",
+      "author": "Lasse Collin",
+      "subject": "Re: [xz-devel] XZ for Java",
+      "url": "https://www.mail-archive.com/xz-devel@tukaani.org/msg00571.html",
+      "text": "As I have hinted in earlier emails, Jia Tan may have a bigger role in the project in the future. He has been helping a lot off-list and is practically a co-maintainer already. :-) I know that not much has happened in the git repository yet but things happen in small steps. In any case some change in maintainership is already in progress at least for XZ Utils.",
+      "kind": "maintainer_reply",
+      "verified": true
+    },
+    {
+      "date": "2022-07-09",
+      "author": "Gary Lucas",
+      "subject": "[xz-devel] Question about using Java API for geospatial data",
+      "url": "https://www.mail-archive.com/xz-devel@tukaani.org/msg00572.html",
+      "text": "Would anyone be able to confirm that I am using the Java library xz-java-1.9.zip correctly? If not, could you suggest a better way to use it?",
+      "kind": "other",
+      "verified": true
+    },
+    {
+      "date": "2022-08-12",
+      "author": "Lasse Collin",
+      "subject": "[xz-devel] XZ Utils 5.2.6",
+      "url": "https://www.mail-archive.com/xz-devel@tukaani.org/msg00583.html",
+      "text": "XZ Utils 5.2.6 is available at <https://tukaani.org/xz/>. Here is an extract from the NEWS file: 5.2.6 (2022-08-12) * xz: - The --keep option now accepts symlinks, hardlinks, and setuid, setgid, and sticky files. Previously this required using --force.",
+      "kind": "release",
+      "verified": true
+    },
+    {
+      "date": "2022-08-22",
+      "author": "Lasse Collin",
+      "subject": "[xz-devel] XZ Utils 5.3.3alpha",
+      "url": "https://www.mail-archive.com/xz-devel@tukaani.org/msg00591.html",
+      "text": "XZ Utils 5.3.3alpha is available at <https://tukaani.org/xz/>. Here is an extract from the NEWS file: * All fixes from 5.2.6. * liblzma: - Fixed 32-bit build. - Added threaded .xz decompressor lzma_stream_decoder_mt().",
+      "kind": "release",
+      "verified": true
+    },
+    {
+      "date": "2022-09-27",
+      "author": "Jia Tan",
+      "subject": "Re: [xz-devel] XZ Utils 5.3.3alpha",
+      "url": "https://www.mail-archive.com/xz-devel@tukaani.org/msg00593.html",
+      "text": "The 5.4.0 release that will contain the multi threaded decoder is planned for December.",
+      "kind": "other",
+      "verified": true
+    },
+    {
+      "date": "2022-10-20",
+      "author": "Jia Tan",
+      "subject": "Re: [xz-devel] [PATCH 0/2] tests: Disable bits that require the [encoder|threads]",
+      "url": "https://www.mail-archive.com/xz-devel@tukaani.org/msg00602.html",
+      "text": "Thank you for reporting this and for your patches. We made a few minor changes to extend your patch to also compile and skip tests if encoders, threads, or decoders were disabled, including the script tests. These changes have been committed to master, so they will be included in the upcoming 5.4.0 release.",
+      "kind": "other",
+      "verified": true
+    },
+    {
+      "date": "2022-11-13",
+      "author": "Lasse Collin",
+      "subject": "[xz-devel] XZ Utils 5.2.8",
+      "url": "https://www.mail-archive.com/xz-devel@tukaani.org/msg00607.html",
+      "text": "XZ Utils 5.2.8 is available at <https://tukaani.org/xz/>. Here is an extract from the NEWS file: 5.2.8 (2022-11-13) * xz: - If xz cannot remove an input file when it should, this is now treated as a warning (exit status 2) instead of an error (exit status 1).",
+      "kind": "release",
+      "verified": true
+    },
+    {
+      "date": "2022-11-22",
+      "author": "John Paul Adrian Glaubitz",
+      "subject": "[xz-devel] RHEL7 ABI patch (913ddc5) breaks linking on ia64",
+      "url": "https://www.mail-archive.com/xz-devel@tukaani.org/msg00610.html",
+      "text": "Since recently, several packages started to fail to build on Debian unstable ia64 when linking against liblzma. There error was always the same and indicates a problem with the symbols exported by liblzma:",
+      "kind": "bug",
+      "verified": true
+    },
+    {
+      "date": "2022-12-13",
+      "author": "Lasse Collin",
+      "subject": "[xz-devel] XZ Utils 5.2.10 and 5.4.0",
+      "url": "https://www.mail-archive.com/xz-devel@tukaani.org/msg00633.html",
+      "text": "XZ Utils 5.2.10 and 5.4.0 are available at <https://tukaani.org/xz/>. The old stable branch 5.2.x will be maintained for a while so that those who don't want to move to a new stable release immediately can still get bug fixes.",
+      "kind": "release",
+      "verified": true
+    },
+    {
+      "date": "2023-01-11",
+      "author": "Jia Tan",
+      "subject": "[xz-devel] XZ Utils 5.4.1, xz.git on GitHub",
+      "url": "https://www.mail-archive.com/xz-devel@tukaani.org/msg00634.html",
+      "text": "The primary Git repository of XZ Utils is now on <https://github.com/tukaani-project/xz>. It is also an alternative method for sending bug reports, patches, and general discussion. The old repository at <https://git.tukaani.org/xz.git> will be maintained as a mirror and will be updated with some delay.",
+      "kind": "release",
+      "verified": true
+    },
+    {
+      "date": "2023-03-18",
+      "author": "Lasse Collin",
+      "subject": "[xz-devel] XZ Utils 5.2.11 and 5.4.2",
+      "url": "https://www.mail-archive.com/xz-devel@tukaani.org/msg00635.html",
+      "text": "Please let us know if there is interest in more releases for the 5.2 branch. Jia Tan and I will plan further bug-fix releases for this branch only if people will use it. Future release tarballs might be signed by Jia Tan. Recently he has done most of the work in XZ Utils. :-)",
+      "kind": "release",
+      "verified": true
+    },
+    {
+      "date": "2023-05-04",
+      "author": "Jia Tan",
+      "subject": "[xz-devel] XZ Utils 5.2.12 and 5.4.3",
+      "url": "https://www.mail-archive.com/xz-devel@tukaani.org/msg00636.html",
+      "text": "This is the last planned release for the 5.2.12 branch. Patches or new releases may still be made if severe bugs are found. The OpenPGP signing key used for this and future releases has changed to my key",
+      "kind": "release",
+      "verified": true
+    },
+    {
+      "date": "2023-08-02",
+      "author": "Jia Tan",
+      "subject": "[xz-devel] XZ Utils 5.4.4",
+      "url": "https://www.mail-archive.com/xz-devel@tukaani.org/msg00637.html",
+      "text": "XZ Utils 5.4.4 is available at <https://tukaani.org/xz> and <https://github.com/tukaani-project/xz/releases/tag/v5.4.4>.",
+      "kind": "release",
+      "verified": true
+    },
+    {
+      "date": "2023-09-07",
+      "author": "Jules Maselbas",
+      "subject": "[xz-devel] [PATCH] [xz-embedded] Fix condition that automatically define XZ_DEC_BCJ",
+      "url": "https://www.mail-archive.com/xz-devel@tukaani.org/msg00638.html",
+      "text": "The XZ_DEC_BCJ macro was not defined when only selecting the ARM64 BCJ decoder, leading to no BCJ decoder being compiled.",
+      "kind": "patch",
+      "verified": true
+    },
+    {
+      "date": "2023-11-01",
+      "author": "Jia Tan",
+      "subject": "[xz-devel] XZ Utils 5.4.5",
+      "url": "https://www.mail-archive.com/xz-devel@tukaani.org/msg00641.html",
+      "text": "XZ Utils 5.4.5 is available at <https://tukaani.org/xz> and <https://github.com/tukaani-project/xz/releases/tag/v5.4.5>.",
+      "kind": "release",
+      "verified": true
+    },
+    {
+      "date": "2024-01-26",
+      "author": "Jia Tan",
+      "subject": "[xz-devel] XZ Utils 5.4.6, 5.5.1alpha, and website changes",
+      "url": "https://www.mail-archive.com/xz-devel@tukaani.org/msg00642.html",
+      "text": "The XZ specific content has been moved from <https://tukaani.org/xz/> to <https://xz.tukaani.org/>. The old links will be kept working via redirections. Additionally, the official XZ Embedded Git repository is now on GitHub <https://github.com/tukaani-project/xz-embedded>.",
+      "kind": "release",
+      "verified": true
+    },
+    {
+      "date": "2024-02-08",
+      "author": "Lasse Collin",
+      "subject": "[xz-devel] XZ projects license change proposal",
+      "url": "https://www.mail-archive.com/xz-devel@tukaani.org/msg00643.html",
+      "text": "I have made a post on GitHub about possibly moving from public domain to BSD Zero Clause License: https://github.com/tukaani-project/xz/issues/79",
+      "kind": "other",
+      "verified": true
+    },
+    {
+      "date": "2024-02-14",
+      "author": "Jia Tan",
+      "subject": "[xz-devel] XZ Utils 5.5.2beta",
+      "url": "https://www.mail-archive.com/xz-devel@tukaani.org/msg00644.html",
+      "text": "This is the first release made under the 0BSD license. Please let us know if there are any concerns about the license change. We are looking forward to releasing 5.6.0 later this month!",
+      "kind": "release",
+      "verified": true
+    },
+    {
+      "date": "2024-02-24",
+      "author": "Jia Tan",
+      "subject": "[xz-devel] XZ Utils 5.6.0",
+      "url": "https://www.mail-archive.com/xz-devel@tukaani.org/msg00653.html",
+      "text": "XZ Utils 5.6.0 is available at <https://xz.tukaani.org/xz-utils/>. There currently are no plans to maintain the 5.4.x branch, but releases could be made if there is community interest.",
+      "kind": "release",
+      "verified": true
+    },
+    {
+      "date": "2024-03-04",
+      "author": "Dennis Ens",
+      "subject": "[xz-devel] [BUG] Issue with xz-java: Unknown Filter ID",
+      "url": "https://www.mail-archive.com/xz-devel@tukaani.org/msg00665.html",
+      "text": "I think I may have found a bug with xz-java. With version 1.9 (the newest, I think). While trying to decompress a file I got an error message saying \"Unknown Filter ID 11\".",
+      "kind": "bug",
+      "verified": true
+    },
+    {
+      "date": "2024-03-09",
+      "author": "Jia Tan",
+      "subject": "[xz-devel] XZ Utils 5.6.1",
+      "url": "https://www.mail-archive.com/xz-devel@tukaani.org/msg00673.html",
+      "text": "XZ Utils 5.6.1 is available at <https://xz.tukaani.org/xz-utils/>. Here is an extract from the NEWS file: 5.6.1 (2024-03-09) * liblzma: Fixed two bugs relating to GNU indirect function (IFUNC) with GCC. The more serious bug caused a program linked with liblzma to crash on start up if the flag -fprofile-generate was used to build liblzma.",
+      "kind": "release",
+      "verified": true
+    },
+    {
+      "date": "2024-03-29",
+      "author": "Andres Freund",
+      "subject": "backdoor in upstream xz/liblzma leading to ssh server compromise",
+      "url": "https://www.openwall.com/lists/oss-security/2024/03/29/4",
+      "text": "After observing a few odd symptoms around liblzma (part of the xz package) on Debian sid installations over the last weeks (logins with ssh taking a lot of CPU, valgrind errors) I figured out the answer: The upstream xz repository and the xz tarballs have been backdoored. At first I thought this was a compromise of debian's package, but it turns out to be upstream.",
+      "kind": "disclosure",
+      "verified": true
+    }
+  ]
+}
