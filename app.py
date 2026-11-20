@@ -3,7 +3,7 @@
 # dependencies = ["fastapi>=0.162", "uvicorn>=0.54", "openai>=3.51,<4", "httpx>=0.28",
 #                 "psycopg[binary]>=3.3", "boto3>=1.44", "python-dotenv>=1.2.4"]
 # ///
-"""xz Radar: reads the public conversations around the code you depend on and flags takeover risk.
+"""Kairos: reads the public conversations around the code you depend on and flags takeover risk.
 
     uv run app.py              then open http://localhost:8000
     uv run app.py --rescan     re-checks saved projects (the nightly systemd timer runs this)

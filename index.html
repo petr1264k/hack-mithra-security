@@ -3,41 +3,41 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Foreshock</title>
+<title>Kairos</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400&family=Sora:wght@300;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --void:#030705; --panel:#0d1511; --panel2:#111b16; --line:#1b2a22; --line2:#25392e;
-    --text:#e3eee7; --dim:#8b9c92; --faint:#55665c;
+    --void:#07080a; --panel:#101114; --panel2:#15171a; --line:#222529; --line2:#2c3036;
+    --text:#e6e8eb; --dim:#9097a1; --faint:#5d636c; --accent:#e6e8eb;
     --green:#2fd27a; --amber:#ffa630; --red:#ff4d5e; --yellow:#e8d34a; --teal:#2fc9b4;
   }
   * { box-sizing:border-box; }
   html, body { margin:0; }
   body { min-height:100vh; padding:22px; color:var(--text); font:14px/1.5 "IBM Plex Sans", system-ui, sans-serif;
-    background:radial-gradient(1100px 560px at 72% -12%, rgba(47,210,122,.18), transparent 62%), var(--void); }
-  a { color:var(--green); text-decoration:none; } a:hover { text-decoration:underline; }
+    background:radial-gradient(1100px 560px at 72% -12%, rgba(255,255,255,.05), transparent 62%), var(--void); }
+  a { color:var(--text); text-decoration:underline; text-decoration-color:rgba(255,255,255,.28); text-underline-offset:2px; } a:hover { text-decoration-color:var(--text); }
   button { font:inherit; color:inherit; }
-  :focus-visible { outline:2px solid var(--green); outline-offset:2px; }
+  :focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
 
   .shell { max-width:1440px; margin:0 auto; border-radius:22px; overflow:hidden;
-    background:linear-gradient(180deg, rgba(13,21,17,.94), rgba(7,12,9,.97));
-    border:1px solid rgba(47,210,122,.3); box-shadow:0 0 90px rgba(47,210,122,.14); }
+    background:linear-gradient(180deg, rgba(16,17,20,.96), rgba(9,10,12,.98));
+    border:1px solid rgba(255,255,255,.1); box-shadow:0 20px 80px rgba(0,0,0,.5); }
 
   .top { display:flex; align-items:center; gap:22px; padding:12px 18px; border-bottom:1px solid var(--line); flex-wrap:wrap; }
   .brand { font:600 18px/1 Sora, sans-serif; white-space:nowrap; }
-  .brand span { color:var(--green); font-weight:300; }
+  .brand span { font-weight:300; }
   .nav button { background:none; border:0; padding:7px 12px; border-radius:8px; color:var(--dim); cursor:pointer; font-size:13px; }
   .nav button.on { color:var(--text); background:var(--panel2); box-shadow:inset 0 0 0 1px var(--line2); }
   .search { margin-left:auto; display:flex; align-items:center; gap:6px; background:var(--panel); border:1px solid var(--line2);
     border-radius:11px; padding:4px 4px 4px 12px; flex:0 1 480px; min-width:240px; }
   .search input { flex:1; min-width:0; background:none; border:0; outline:none; color:var(--text); font:13px "IBM Plex Sans"; padding:6px 0; }
   .btn { border:1px solid var(--line2); background:var(--panel2); border-radius:8px; padding:7px 14px; cursor:pointer; font-size:13px; white-space:nowrap; }
-  .btn.go { background:var(--green); border-color:var(--green); color:#04140b; font-weight:600; }
+  .btn.go { background:var(--accent); border-color:var(--accent); color:#0b0c0e; font-weight:600; }
   .btn:disabled { opacity:.55; cursor:wait; }
   .iconbtn { width:34px; height:34px; display:grid; place-items:center; border-radius:9px; border:1px solid var(--line2); background:var(--panel); cursor:pointer; color:var(--dim); }
-  .iconbtn:hover { color:var(--green); border-color:var(--green); }
+  .iconbtn:hover { color:var(--text); border-color:var(--dim); }
 
   .grid { display:grid; grid-template-columns:minmax(0,1fr) 400px; gap:14px; padding:16px; align-items:start; }
   .col { display:flex; flex-direction:column; gap:14px; min-width:0; }
@@ -63,7 +63,7 @@
   .rowlabel { font:400 10.5px "IBM Plex Sans"; fill:var(--dim); cursor:pointer; }
   .rowlabel:hover, .rowlabel.sel { fill:var(--text); }
   .axis { font:400 10px "JetBrains Mono", monospace; fill:var(--faint); }
-  .pinlabel { font:400 11px "JetBrains Mono", monospace; fill:#d5f5e3; }
+  .pinlabel { font:400 11px "JetBrains Mono", monospace; fill:var(--text); }
   .legend { display:flex; gap:14px; flex-wrap:wrap; margin-top:8px; font-size:12px; color:var(--dim); }
   .legend i { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px; vertical-align:middle; }
 
@@ -71,7 +71,7 @@
   td { padding:8px; border-top:1px solid var(--line); font-size:13px; vertical-align:middle; }
   tbody tr { cursor:pointer; } tbody tr:hover, tbody tr.sel { background:var(--panel2); }
   .score { font:400 18px Sora, sans-serif; display:inline-flex; align-items:center; gap:8px; min-width:56px; }
-  .chip { display:inline-flex; align-items:center; gap:5px; font-size:11.5px; padding:2px 8px; border-radius:20px; border:1px solid var(--line2); background:#121c17; margin:2px 4px 2px 0; white-space:nowrap; }
+  .chip { display:inline-flex; align-items:center; gap:5px; font-size:11.5px; padding:2px 8px; border-radius:20px; border:1px solid var(--line2); background:#16181b; margin:2px 4px 2px 0; white-space:nowrap; }
   .chip i { width:6px; height:6px; border-radius:50%; display:inline-block; }
 
   .alert { border-left:2px solid; border-radius:6px; padding:7px 10px; margin-bottom:8px; background:var(--panel2); cursor:pointer; }
@@ -81,20 +81,20 @@
   .alert.open q { -webkit-line-clamp:unset; }
 
   .formula { font-size:12px; color:var(--dim); margin:0 0 10px; }
-  .adopt { border:1px solid rgba(47,210,122,.45); background:rgba(47,210,122,.06); border-radius:10px; padding:9px 12px; margin-top:4px; font-size:13px; }
-  .adopt b { color:var(--green); font-weight:500; }
+  .adopt { border:1px solid rgba(255,255,255,.18); background:rgba(255,255,255,.03); border-radius:10px; padding:9px 12px; margin-top:4px; font-size:13px; }
+  .adopt b { color:var(--text); font-weight:600; }
   .adopt div, .clip { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .lvl { font-size:11px; padding:1px 8px; border-radius:10px; border:1px solid; white-space:nowrap; }
   .ev { padding:6px 0; border-top:1px solid var(--line); cursor:pointer; }
   .ev:first-child { border-top:0; }
-  .ev:hover .t { color:var(--green); }
+  .ev:hover .t { text-decoration:underline; }
   .ev .t { font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .ev .m { font-size:12px; color:var(--faint); }
 
   .empty { color:var(--dim); font-size:13px; padding:12px 2px; }
   .err { color:var(--red); }
   .status:not(:empty) { padding:10px 18px 0; color:var(--dim); font-size:13px; }
-  .spin { display:inline-block; width:12px; height:12px; border:2px solid var(--green); border-right-color:transparent; border-radius:50%; animation:spin .8s linear infinite; vertical-align:-1px; margin-right:6px; }
+  .spin { display:inline-block; width:12px; height:12px; border:2px solid var(--dim); border-right-color:transparent; border-radius:50%; animation:spin .8s linear infinite; vertical-align:-1px; margin-right:6px; }
   @keyframes spin { to { transform:rotate(360deg); } }
   .banner { margin-top:6px; font-size:13px; color:var(--dim); min-height:20px; }
   .banner b { color:var(--red); font-weight:600; }
@@ -178,7 +178,7 @@
 </div>
 
 <script>
-const NAME = ['Fore', 'shock'];  // the product name, in two parts: plain + green
+const NAME = ['Kairos', ''];  // the product name; the second part is set in a lighter weight
 document.getElementById('brand').innerHTML = `${NAME[0]}<span>${NAME[1]}</span>`;
 document.title = NAME.join('');
 
@@ -218,7 +218,7 @@ function hex(cx, cy, r, fill, attrs = '', title = '') {
 function ring(value, color, label) {
   const r = 38, c = 2 * Math.PI * r, f = Math.max(0, Math.min(1, (value || 0) / 100));
   return `<div class="ring" title="${esc(label)}"><svg viewBox="0 0 100 100" role="img" aria-label="${esc(label)}: ${value ?? 'no score'} of 100">
-    <circle cx="50" cy="50" r="${r}" stroke="#18241d" stroke-width="7" fill="none"/>
+    <circle cx="50" cy="50" r="${r}" stroke="#1f2226" stroke-width="7" fill="none"/>
     <circle cx="50" cy="50" r="${r}" stroke="${color}" stroke-width="7" fill="none" stroke-linecap="round"
       stroke-dasharray="${(c * f).toFixed(1)} ${c.toFixed(1)}" transform="rotate(-90 50 50)" style="filter:drop-shadow(0 0 6px ${color}99); transition:stroke-dasharray .4s"/>
     <text x="50" y="59" text-anchor="middle" class="rv">${value ?? '—'}</text></svg></div>`;
@@ -288,14 +288,14 @@ function drawMap(deps) {
     for (let k = 0; k < W; k++) {
       const t = worstType(sigs[k]), cx = left + k * w + off + w / 2;
       if (t) svg += hex(cx, cy, r * .9, TCOLOR[t], `style="filter:drop-shadow(0 0 4px ${TCOLOR[t]})"`, `${d.package}: ${TNAME[t]}`);
-      else if (counts[k]) svg += hex(cx, cy, r * .9, '#2fd27a', `opacity="${(0.16 + Math.min(1, counts[k] / 6) * 0.5).toFixed(2)}"`, `${d.package}: ${counts[k]} messages`);
-      else svg += hex(cx, cy, r * .9, '#17221c');
+      else if (counts[k]) svg += hex(cx, cy, r * .9, '#c9ced6', `opacity="${(0.16 + Math.min(1, counts[k] / 6) * 0.5).toFixed(2)}"`, `${d.package}: ${counts[k]} messages`);
+      else svg += hex(cx, cy, r * .9, '#1a1c20');
     }
   });
   const height = top + deps.length * rowH + r + 18;
   const ticks = [0, 13, 26, 39, 51].map(k => `<text x="${(left + k * w + w / 2).toFixed(1)}" y="${height - 3}" class="axis" text-anchor="middle">${new Date(start.getTime() + k * 7 * DAY).toISOString().slice(0, 7)}</text>`).join('');
   $('map').innerHTML = `<svg viewBox="0 0 ${(left + W * w + w).toFixed(0)} ${height.toFixed(0)}" role="img" aria-label="Weekly conversation map">${svg}${ticks}</svg>`;
-  $('maplegend').innerHTML = `<span><i style="background:#2fd27a; opacity:.6"></i>Messages</span>` + TYPES.map(([, n, c]) => `<span><i style="background:${c}"></i>${n}</span>`).join('');
+  $('maplegend').innerHTML = `<span><i style="background:#c9ced6; opacity:.6"></i>Messages</span>` + TYPES.map(([, n, c]) => `<span><i style="background:${c}"></i>${n}</span>`).join('');
 }
 
 function drawTable(deps) {
@@ -375,7 +375,7 @@ function drawTerrain(upto) {
   const t = replay.timeline, n = t.length, W = 1000, H = 280, base = 240, left = 16, span = W - 52;
   const x = i => left + (i + .5) * span / n, y = s => base - (s || 0) * 1.85;
   const shown = t.slice(0, upto + 1);
-  let svg = `<defs><linearGradient id="tg" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#2fd27a" stop-opacity=".4"/><stop offset="1" stop-color="#2fd27a" stop-opacity="0"/></linearGradient>
+  let svg = `<defs><linearGradient id="tg" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#e6e8eb" stop-opacity=".18"/><stop offset="1" stop-color="#e6e8eb" stop-opacity="0"/></linearGradient>
     <filter id="glow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>`;
   [[30, '#ffa630', 'watch'], [60, '#ff4d5e', 'high']].forEach(([v, c, l]) => svg += `<line x1="${left}" x2="${W - 36}" y1="${y(v)}" y2="${y(v)}" stroke="${c}" stroke-opacity=".3"/><text x="${W - 32}" y="${y(v) + 3}" class="axis" style="fill:${c}">${l}</text>`);
   t.forEach((m, i) => {
@@ -387,15 +387,15 @@ function drawTerrain(upto) {
       const k = 1 - L * 0.14, dy = L * 6;
       const pts = shown.map((m, i) => `${x(i).toFixed(1)},${(base - (m.score || 0) * 1.85 * k + dy).toFixed(1)}`);
       if (L === 0) svg += `<path d="M${x(0)},${base} L${pts.join(' L')} L${x(shown.length - 1)},${base} Z" fill="url(#tg)"/>`;
-      svg += `<polyline points="${pts.join(' ')}" fill="none" stroke="#2fd27a" stroke-width="${L === 0 ? 2.2 : 1}" stroke-opacity="${L === 0 ? 1 : (0.34 - L * 0.05).toFixed(2)}" ${L === 0 ? 'filter="url(#glow)"' : ''}/>`;
+      svg += `<polyline points="${pts.join(' ')}" fill="none" stroke="#e6e8eb" stroke-width="${L === 0 ? 2.2 : 1}" stroke-opacity="${L === 0 ? 1 : (0.34 - L * 0.05).toFixed(2)}" ${L === 0 ? 'filter="url(#glow)"' : ''}/>`;
     }
     let pin = 0;
     shown.forEach((m, i) => {
       if (!m.new_signals.length) return;
       const c = TCOLOR[worstType(m.new_signals)], py = y(m.score), ly = Math.max(14, py - 22 - (pin++ % 3) * 21);
-      svg += `<line x1="${x(i)}" x2="${x(i)}" y1="${ly}" y2="${py}" stroke="#d5f5e3" stroke-opacity=".5"/><circle cx="${x(i)}" cy="${ly}" r="2.5" fill="#fff"/>
+      svg += `<line x1="${x(i)}" x2="${x(i)}" y1="${ly}" y2="${py}" stroke="#e6e8eb" stroke-opacity=".45"/><circle cx="${x(i)}" cy="${ly}" r="2.5" fill="#fff"/>
         <text x="${x(i) + 6}" y="${ly + 4}" class="pinlabel">${m.score}</text>
-        <circle cx="${x(i)}" cy="${py}" r="5" fill="#0d1511" stroke="${c}" stroke-width="2" style="filter:drop-shadow(0 0 5px ${c})"/>`;
+        <circle cx="${x(i)}" cy="${py}" r="5" fill="#101114" stroke="${c}" stroke-width="2" style="filter:drop-shadow(0 0 5px ${c})"/>`;
     });
   }
   $('terrain').innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Risk score by month">${svg}</svg>`;
@@ -410,9 +410,9 @@ function drawStrip(upto) {
     m.new_signals.forEach(s => { if (!seen.has(s.url)) { seen.add(s.url); colors.push(TCOLOR[s.type]); } });
     for (let k = 0; k < m.messages; k++) {
       const cx = i * colW + colW / 2 + (k % 2 ? w / 4 : -w / 4), cy = 6 + (maxStack - 1 - k) * r * 1.55 + r;
-      if (i > upto) svg += hex(cx, cy, r * .88, '#16201b');
+      if (i > upto) svg += hex(cx, cy, r * .88, '#1a1c20');
       else if (colors[k]) svg += hex(cx, cy, r * .88, colors[k], `style="filter:drop-shadow(0 0 5px ${colors[k]})"`);
-      else svg += hex(cx, cy, r * .88, '#2fd27a', 'opacity=".42"');
+      else svg += hex(cx, cy, r * .88, '#c9ced6', 'opacity=".35"');
     }
   });
   $('strip').innerHTML = `<svg viewBox="0 0 1000 ${(6 + maxStack * r * 1.55 + r).toFixed(0)}" role="img" aria-label="Emails per month">${svg}</svg>`;
