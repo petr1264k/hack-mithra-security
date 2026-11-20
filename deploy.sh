@@ -17,7 +17,7 @@ scp -q app.py index.html app.service rescan.service rescan.timer "root@$IP:"
 ssh "root@$IP" 'mkdir -p data .cache'
 scp -q data/xz_replay.json "root@$IP:data/"
 # The cache holds public GitHub data and model results, so the server does not spend the shared AI key again.
-if [ -d .cache ]; then tar -czf - .cache | ssh "root@$IP" 'tar -xzf -'; fi
+if [ -d .cache ]; then COPYFILE_DISABLE=1 tar --no-xattrs -czf - .cache | ssh "root@$IP" 'tar -xzf -'; fi
 ssh "root@$IP" 'cp app.service rescan.service rescan.timer /etc/systemd/system/ && systemctl daemon-reload && systemctl enable -q app && systemctl enable -q --now rescan.timer && systemctl restart app'
 
 echo "Deployed. Waiting for the app..."
