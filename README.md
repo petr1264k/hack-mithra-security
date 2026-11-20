@@ -12,6 +12,8 @@ Starts from the workshop demo app in [akamai-developers/akamai-workshop-seattle-
 
 In 2024, a backdoor in **xz Utils** (CVE-2024-3094) nearly reached millions of Linux servers. It was caught by luck: an engineer noticed that SSH logins were about half a second slow. The code was the last step of a two-year con. In 2022, new accounts on the public xz-devel mailing list pressed the tired, unpaid maintainer to hand over control, and he said that someone else might take a bigger role. Security scanners read code. This attack showed up first in conversation, and Mithra reads the conversation.
 
+It wasn't a one-off. In 2018 the burned-out maintainer of the npm package event-stream handed it to a stranger who offered to help, and the new owner shipped code that stole bitcoin from a wallet app. Weeks after xz, in April 2024, the OpenJS Foundation reported emails pressing it to make strangers maintainers of a popular JavaScript project.
+
 ## Submission
 
 ```text
@@ -84,16 +86,20 @@ which for xz was about two years before the backdoor. It flags situations, never
 people, shows the evidence behind every flag, and ends with "adopt a maintainer":
 well-supported maintainers are the real defence.
 
-Demo:
-1. xz replay tab, Play. The risk climbs as the 2022 pressure emails arrive and turns
-   red in May 2022. The quotes appear beside the chart, each linked to the archive.
-2. Paste https://github.com/icloud-photos-downloader/icloud_photos_downloader.
-   It scores high (60): a maintainer posted "Looking for new MAINTAINER for the
-   project", another wrote "I'm very busy at the moment and don't have much time for
-   the project", and others asked to be made maintainers. The adopt-a-maintainer card
-   links to ways to help.
-3. Paste https://github.com/akamai-developers/akamai-workshop-seattle-hackathon.
-   Its 7 dependencies score low, and the repo itself shows "not enough data".
+Demo (each saved scan opens straight from its link, with no live scan):
+1. http://172.232.189.84/#scan=50 binbin2000/icloudpd-manager, a small app. 14 of its
+   16 dependencies score low; its icloudpd library scores high (60). That project's
+   maintainers posted "Looking for new MAINTAINER for the project" and "I'm very busy
+   at the moment and don't have much time for the project".
+2. http://172.232.189.84/#scan=46 tzezar/datagrid scores high (60). The owner wrote
+   "I no longer have enough time to actively maintain or develop this project". The
+   adopt-a-maintainer card links to the owner's GitHub Sponsors and Buy Me a Coffee.
+3. http://172.232.189.84/#scan=35 mistletoe scores watch (50): a maintainer stepping
+   back and an open handover to a known contributor, with no pressure from strangers.
+4. http://172.232.189.84/#scan=38 the workshop repo. Its 7 dependencies score low,
+   and the repo itself shows "not enough data".
+5. http://172.232.189.84/#replay then Play. The risk climbs as the 2022 pressure
+   emails arrive and turns red in May 2022, 21 months before the backdoor shipped.
 
 Known limits:
 - Reads the last 12 months, and at most 60 messages per project per scan
@@ -106,8 +112,11 @@ Known limits:
   dependencies of dependencies.
 - The Linode has no GitHub token, so it gets 60 GitHub requests an hour. Scans are
   cached, but a brand-new large repo can hit the limit.
-- English only. The model can still mislabel a message, which is why every flag
-  shows its quote and link.
+- The model still labels some polite requests ("could we get this merged?") as
+  pressure, and once labelled a contributor's warning about attackers as pressure.
+  Code halves pressure from known contributors, but a false alarm can still raise a
+  score. That is why every flag shows its quote and link.
+- English only.
 ```
 
 ## How it works

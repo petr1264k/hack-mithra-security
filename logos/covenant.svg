@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+<clipPath id="k"><path d="M10.1 0L48.9 49.4V64H64V0zM0 11.4L41.3 64H0z"/></clipPath>
+<g fill="none" stroke="#2fd27a" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+<path d="M54 54V12L21 54" clip-path="url(#k)"/>
+<path d="M10 54V12L43 54"/>
+</g>
+</svg>

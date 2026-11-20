@@ -480,6 +480,15 @@ def tag_items(items, model=CHAT_MODEL):
             rejected += 1  # the model's quote is not in the source: drop it rather than show an invented quote
             continue
         item = items[n]
+        at = item["text"].find(quote)
+        if at >= 0:  # the model sometimes stops mid-word; finish the word from the source
+            end = at + len(quote)
+            while end < len(item["text"]) and end - at < len(quote) + 30 and item["text"][end].isalnum():
+                end += 1
+            quote = item["text"][at:end]
+            body = item["text"] if "#issuecomment-" in item["url"] else item["text"].split("\n", 1)[-1]
+            if end >= len(item["text"]) and len(body) >= 600:  # the fetch keeps 600 characters of each message
+                quote += "…"
         kept.append({"type": s["type"], "quote": quote, "why": s.get("why", ""), "author": item["author"],
                      "date": item["date"], "url": item["url"], "strength": 1.0, "assoc": item.get("assoc")})
     return kept, rejected
@@ -731,6 +740,8 @@ def scan(repo_text, fresh=False):
              "repo": f"{owner}/{repo}"}] + deps
     with ThreadPoolExecutor(6) as pool:
         results = list(pool.map(lambda d: analyze_dependency(d, fresh), deps))
+    me = f"{owner}/{repo}".lower()  # a monorepo can depend on its own package: score the repo once
+    results = results[:1] + [r for r in results[1:] if (r.get("repo") or "").lower() != me]
     order = {"red": 0, "yellow": 1, "green": 2, "unknown": 3}
     results.sort(key=lambda r: (order[r["level"]], -(r["score"] or 0)))
     report = {"repo": f"{owner}/{repo}", "scanned": dt.datetime.now(dt.UTC).isoformat(timespec="seconds"),
