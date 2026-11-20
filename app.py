@@ -637,6 +637,19 @@ def select_items(items, limit=60):
     return sorted(keyed + rest, key=lambda i: i["date"])
 
 
+# Someone warning about another account is defending the project, not pressuring it.
+WARNING_RE = re.compile(r"supply[- ]chain attack|\bbe wary\b|\bwary of\b|\bbeware\b|\bhoneypot\b|\bnot authentic|"
+                        r"\bimpersonat|\bsock ?puppet|\bscam\b|\bmalicious\b|\bsuspicious\b|left on \d+ other repos", re.I)
+# Removing or revoking access is the opposite of a handover.
+REVOKE_RE = re.compile(r"\b(remov|revok)\w*\b[^.]{0,40}\b(access|rights|permissions?)\b", re.I)
+
+
+def mislabelled(s, text):
+    if s["type"] in ("pressure_campaign", "xz_similarity") and WARNING_RE.search(text):
+        return True
+    return s["type"] == "control_handover" and bool(REVOKE_RE.search(s["quote"]))
+
+
 def analyze_dependency(dep, fresh=False):
     out = dict(dep)
     found = tuple(dep["repo"].split("/")) if dep.get("repo") else resolve(dep["ecosystem"], dep["package"])
@@ -683,6 +696,8 @@ def analyze_dependency(dep, fresh=False):
     # as in xz, where the pressure came from brand-new names, only newcomers' messages are compared
     signals += [s for s in xz_similar(chosen) if s["author"] not in maintainers and s["url"] not in tagged
                 and s.get("assoc") in NEWCOMER_ROLES]
+    text_of = {i["url"]: i["text"] for i in chosen}
+    signals = [s for s in signals if not mislabelled(s, text_of.get(s["url"], s["quote"]))]  # code drops two known mislabels
     out["signals"] = sorted(signals, key=lambda s: s["date"])
     out["rejected_quotes"] = rejected
     out["item_count"] = len(items)

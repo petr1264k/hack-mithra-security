@@ -67,6 +67,9 @@ Technical choice:
   Code also adjusts each signal using facts from GitHub. Burnout counts only when a
   maintainer says it. A nudge from a known contributor counts half. Pressure from a
   brand-new account counts 1.5 times.
+  Code drops two known mislabels: someone warning about another account ("be wary
+  of this user") is defending the project, not pressuring it, and removing access
+  is the opposite of a handover.
 - Caching protects the shared AI key and GitHub's rate limit. Model results are
   cached by content hash on disk and in PostgreSQL, so the laptop and the Linode
   share them. GitHub responses are cached per day. Rate-limit errors are never
@@ -98,7 +101,11 @@ Demo (live scans: pick a repo from "Try an example" beside the search box, press
    handover to a known contributor, with no pressure from strangers.
 4. akamai-developers/akamai-workshop-seattle-hackathon. Its 7 dependencies score low,
    and the repo itself shows "not enough data".
-5. xz replay tab, Play. The risk climbs as the 2022 pressure emails arrive and turns
+5. mpld3/mpld3 scores high (85), live this month. Two weeks after its maintainer
+   asked publicly for help, a brand-new account offered to take over triaging issues
+   and reviewing pull requests. The maintainer then warned 10 other repos where the
+   same account had made offers, and asked "Have we accidentally created a honeypot?"
+6. xz replay tab, Play. The risk climbs as the 2022 pressure emails arrive and turns
    red in May 2022, 21 months before the backdoor shipped.
 Every scan is saved; http://172.232.189.84/#scan=<id> opens one again.
 
@@ -114,9 +121,8 @@ Known limits:
 - The Linode has no GitHub token, so it gets 60 GitHub requests an hour. Scans are
   cached, but a brand-new large repo can hit the limit.
 - The model still labels some polite requests ("could we get this merged?") as
-  pressure, and once labelled a contributor's warning about attackers as pressure.
-  Code halves pressure from known contributors, but a false alarm can still raise a
-  score. That is why every flag shows its quote and link.
+  pressure. Code halves pressure from known contributors, but a false alarm can
+  still raise a score. That is why every flag shows its quote and link.
 - English only.
 ```
 
