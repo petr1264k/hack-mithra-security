@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Akamai Cloud workshop demo</title>
+<link rel="icon" href="data:,">
+<style>
+  :root { --navy: #002f6c; --blue: #00a4eb; --edge: #8f9bab; }  /* Akamai navy and blue */
+  body { font: 17px/1.5 system-ui, sans-serif; max-width: 1080px; margin: 2rem auto; padding: 0 1rem; color: #1b1b1b; background: #f5f7fa; }
+  h1 { font-size: 1.7rem; margin: 0; color: var(--navy); } h2 { font-size: 1.1rem; margin-top: 0; } .muted { color: #555; }
+  a { color: var(--navy); } :focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+  #status { display: flex; flex-wrap: wrap; gap: .5rem; margin: 1rem 0 1.5rem; }
+  .badge { padding: .2rem .7rem; border-radius: 999px; font-size: .85rem; background: #e3e7ec; }
+  .connected, .configured { background: #d7f0df; } .error { background: #fbdcdc; }
+  .grid { display: grid; grid-template-columns: 2fr 1fr; gap: 1rem; }
+  section { background: #fff; border: 1px solid #cfd6df; border-radius: 8px; padding: 1.1rem; } .wide { grid-column: 1 / -1; }
+  textarea, select { font: inherit; padding: .5rem; border: 1px solid var(--edge); border-radius: 6px; background: #fff; }
+  textarea { width: 100%; box-sizing: border-box; min-height: 4.5rem; } li { margin-bottom: .6rem; }
+  button { font: inherit; font-weight: 600; padding: .5rem 1.1rem; border: 0; border-radius: 6px; background: var(--navy); color: #fff; cursor: pointer; }
+  button:hover { background: #0a4a9f; } input[type=file] { font: inherit; font-size: .9rem; max-width: 100%; }
+  ::file-selector-button { font: inherit; padding: .4rem .8rem; margin-right: .6rem; border: 1px solid var(--edge); border-radius: 6px; background: #fff; cursor: pointer; }
+  #answer { white-space: pre-wrap; margin-top: 1rem; padding: .8rem 1rem; border-left: 4px solid var(--blue); background: #eef7fd; }
+  #answer:empty { display: none; }
+  @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<h1>Ask about your files</h1>
+<p class="muted">Ask the model about a file in Object Storage, and see past questions from PostgreSQL.</p>
+<div id="status"></div>
+<div class="grid">
+  <section>
+    <h2>Ask</h2>
+    <form id="ask">
+      <textarea id="question" required placeholder="Give me three ideas for a hackathon app that uses a model and file storage."></textarea>
+      <p><label>About the file <select id="file"><option value="">no file</option></select></label>
+        <button>Ask</button></p>
+    </form>
+    <div id="answer"></div>
+  </section>
+  <section id="files-panel">
+    <h2>Files</h2>
+    <ul id="files"></ul>
+    <form id="upload"><input type="file" name="file" accept=".txt,.md,text/plain" required>
+      <p><button>Upload</button> <span class="muted">Text files, up to 1 MB</span></p></form>
+  </section>
+  <section id="history-panel" class="wide">
+    <h2>History</h2>
+    <ol id="history"></ol>
+  </section>
+</div>
+<script>
+const LABS = "https://github.com/akamai-developers/akamai-workshop-seattle-hackathon/tree/main/";
+const $ = (id) => document.getElementById(id);
+const item = (tag, text) => Object.assign(document.createElement(tag), { textContent: text });
+
+async function getJSON(url, options) {
+  const response = await fetch(url, options);
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(typeof data.detail === "string" ? data.detail : response.statusText);
+  return data;
+}
+
+function notConnected(panel, service, lab) {
+  const note = item("p", `${service} is not connected. Fill in its lines in .env and restart the app. `);
+  note.className = "muted";
+  note.append(Object.assign(document.createElement("a"), { href: LABS + lab, textContent: `Open ${lab}` }));
+  panel.replaceChildren(panel.querySelector("h2"), note);
+}
+
+async function loadStatus() {
+  const health = await getJSON("/health");
+  $("status").replaceChildren(...Object.entries(health).map(([name, state]) => {
+    const badge = item("span", `${name.replace("_", " ")}: ${state}`);
+    badge.className = "badge " + state.split(":")[0].replace(" ", "-");
+    return badge;
+  }));
+  return health;
+}
+
+async function loadFiles(health) {
+  if (health.object_storage === "not set") return notConnected($("files-panel"), "Object Storage", "04-object-storage");
+  const keys = await getJSON("/files");
+  $("files").replaceChildren(...keys.map((key) => item("li", key)));
+  const chosen = $("file").value;
+  $("file").replaceChildren(new Option("no file", ""), ...keys.map((key) => new Option(key, key)));
+  $("file").value = keys.includes(chosen) ? chosen : "";
+}
+
+async function loadHistory(health) {
+  if (health.database === "not set") return notConnected($("history-panel"), "The database", "03-database");
+  const rows = await getJSON("/history");
+  $("history").replaceChildren(...rows.map((row) => {
+    const entry = item("li", "");
+    entry.append(item("strong", row.question + (row.file ? ` (${row.file})` : "")), item("div", row.answer));
+    return entry;
+  }));
+}
+
+async function refresh() {
+  const health = await loadStatus();
+  const report = (panel) => (error) => panel.append(item("p", `Could not load: ${error.message}`));
+  await Promise.all([loadFiles(health).catch(report($("files-panel"))),
+                     loadHistory(health).catch(report($("history-panel")))]);
+}
+
+$("ask").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  $("answer").textContent = "Waiting for the model...";
+  try {
+    const data = await getJSON("/ask", { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question: $("question").value, file: $("file").value || null }) });
+    $("answer").textContent = data.answer;
+    refresh();
+  } catch (error) {
+    $("answer").textContent = `Error: ${error.message}`;
+  }
+});
+
+$("upload").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  try {
+    await getJSON("/files", { method: "POST", body: new FormData($("upload")) });
+    $("upload").reset();
+    refresh();
+  } catch (error) {
+    alert(`Upload failed: ${error.message}`);
+  }
+});
+
+refresh();
+</script>
+</body>
+</html>

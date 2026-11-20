@@ -1,0 +1,17 @@
+# Runs /root/app.py on every boot and restarts it if it stops.
+# To install it on the Linode, see "Keep it running" in 02-linode/README.md.
+[Unit]
+Description=Workshop app on port 80
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+WorkingDirectory=/root
+Environment=HOME=/root
+Environment=PORT=80
+ExecStart=/root/.local/bin/uv run /root/app.py
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
