@@ -12,7 +12,7 @@ Starts from the workshop demo app in [akamai-developers/akamai-workshop-seattle-
 
 In 2024, a backdoor in **xz Utils** (CVE-2024-3094) nearly reached millions of Linux servers. It was caught by luck: an engineer noticed that SSH logins were about half a second slow. The code was the last step of a two-year con. In 2022, new accounts on the public xz-devel mailing list pressed the tired, unpaid maintainer to hand over control, and he said that someone else might take a bigger role. Security scanners read code. This attack showed up first in conversation, and Mithra reads the conversation.
 
-It wasn't a one-off. In 2018 the burned-out maintainer of the npm package event-stream handed it to a stranger who offered to help, and the new owner shipped code that stole bitcoin from a wallet app. Weeks after xz, in April 2024, the OpenJS Foundation reported emails pressing it to make strangers maintainers of a popular JavaScript project.
+It wasn't a one-off. In 2018 the maintainer of the npm package event-stream, who no longer used it, handed it to a stranger who offered to take it over, and the new owner shipped code aimed at stealing bitcoin from users of the Copay wallet. Weeks after xz, in April 2024, the OpenJS Foundation reported emails pressing it to make people with little history in a popular JavaScript project its maintainers.
 
 ## Submission
 
