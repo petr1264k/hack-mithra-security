@@ -142,8 +142,10 @@ async function show(i) {
   if (d.adopt) {
     const a = d.adopt;
     html += `<div class="card adopt"><img src="${esc(a.avatar)}" alt=""><h3 style="margin:0">💚 Adopt a maintainer</h3>
-      <p><b>${esc(a.login)}</b> wrote ${Math.round(a.share*100)}% of the last year's commits to ${esc(d.package)} (${a.commits} of ${a.total_commits}). ${a.burnout ? 'They have said publicly they are stretched thin. ' : ''}This person is carrying part of your app alone.</p>
-      ${a.funding.length ? '<p>Support them: ' + a.funding.map(f => `<a href="${esc(f.url)}" target="_blank">${esc(f.platform)}</a>`).join(' · ') + '</p>' : '<p class="muted">No sponsor link published. A thank-you issue or a reviewed pull request helps too.</p>'}
+      <p><b>${esc(a.login)}</b> said on ${esc(a.asked_on)}: <q>${esc(a.quote)}</q> <a href="${esc(a.url)}" target="_blank">source</a>
+      ${a.total_commits ? `<br>They made ${a.commits} of the ${a.total_commits} commits to ${esc(d.package)} in the last year.` : ''}
+      This is the moment a project needs help, and the moment attackers look for.</p>
+      ${a.funding.length ? '<p>Support the project: ' + a.funding.map(f => `<a href="${esc(f.url)}" target="_blank">${esc(f.platform)}</a>`).join(' · ') + '</p>' : '<p class="muted">No sponsor link published. Reviewing a pull request or answering issues helps too.</p>'}
       ${a.help_wanted.length ? '<p>Open "help wanted" issues:</p><ul>' + a.help_wanted.map(h => `<li><a href="${esc(h.url)}" target="_blank">${esc(h.title)}</a></li>`).join('') + '</ul>' : ''}
       <p class="muted">Well-supported maintainers are the main defense against takeovers like xz.</p></div>`;
   }

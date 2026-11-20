@@ -8,6 +8,7 @@ Wants=network-online.target
 [Service]
 WorkingDirectory=/root
 Environment=HOME=/root
+Environment=TZ=America/Los_Angeles
 Environment=PORT=80
 ExecStart=/root/.local/bin/uv run /root/app.py
 Restart=always

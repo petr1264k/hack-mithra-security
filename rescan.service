@@ -7,4 +7,5 @@ After=network-online.target
 Type=oneshot
 WorkingDirectory=/root
 Environment=HOME=/root
+Environment=TZ=America/Los_Angeles
 ExecStart=/root/.local/bin/uv run /root/app.py --rescan

@@ -189,7 +189,9 @@ def gh(path, params=None):
     r = http.get(url, params=params, headers=headers)
     if r.status_code in (403, 429) and r.headers.get("x-ratelimit-remaining") == "0":
         raise RateLimited("GitHub rate limit reached. Try again later.")
-    data = r.json() if r.status_code < 300 else None
+    if r.status_code not in (200, 404):  # never cache a rate limit or a server error for the whole day
+        return None
+    data = r.json() if r.status_code == 200 else None
     disk_put(key, {"v": data})
     return data
 
@@ -211,6 +213,8 @@ def raw(owner, repo, path):
     if hit is not None:
         return hit["v"]
     r = http.get(f"https://raw.githubusercontent.com/{owner}/{repo}/HEAD/{path}")
+    if r.status_code not in (200, 404):
+        return None
     text = r.text if r.status_code == 200 else None
     disk_put(key, {"v": text})
     return text
@@ -339,7 +343,7 @@ def is_bot(user):
 
 def fetch_activity(owner, repo, fresh=False):
     """About 12 months of public activity for one repo. Archived to Object Storage as the evidence record."""
-    archive_key = f"evidence/{owner}/{repo}/{today()}.json"
+    archive_key = f"evidence/{owner}/{repo}/{today()}-v2.json"
     if not fresh:
         cached = disk_get("act_" + sha(archive_key)) or bucket_get(archive_key)
         if cached:
@@ -352,17 +356,30 @@ def fetch_activity(owner, repo, fresh=False):
     releases = gh(f"/repos/{owner}/{repo}/releases", {"per_page": 20}) or []
     contributors = gh(f"/repos/{owner}/{repo}/contributors", {"per_page": 15}) or []
     help_wanted = gh(f"/repos/{owner}/{repo}/issues", {"state": "open", "labels": "help wanted", "per_page": 5}) or []
-    items = []
-    for issue in issues if isinstance(issues, list) else []:
-        if is_bot(issue.get("user")) or issue.get("created_at", "") < since:
+    # the most-discussed threads of the year: a busy repo's 100 newest comments cover only weeks
+    hot = gh(f"/repos/{owner}/{repo}/issues", {"state": "all", "since": since, "per_page": 30, "sort": "comments", "direction": "desc"}) or []
+    items, seen = [], set()
+    threads = []
+    for issue in (issues if isinstance(issues, list) else []) + (hot if isinstance(hot, list) else []):
+        if is_bot(issue.get("user")) or issue.get("created_at", "") < since or issue["html_url"] in seen:
             continue
+        seen.add(issue["html_url"])
+        text = f"{issue.get('title', '')}\n{(issue.get('body') or '')[:600]}"
         items.append({"author": issue["user"]["login"], "date": issue["created_at"][:10], "url": issue["html_url"],
-                      "text": f"{issue.get('title', '')}\n{(issue.get('body') or '')[:600]}"})
-    for comment in comments if isinstance(comments, list) else []:
-        if is_bot(comment.get("user")):
+                      "assoc": issue.get("author_association"), "text": text})
+        if KEYWORDS.search(text) and issue.get("comments", 0):
+            threads.append(issue)
+    # read the replies of the top maintainer-related threads: pressure and handover happen in the replies
+    threads.sort(key=lambda i: i.get("comments", 0), reverse=True)
+    thread_comments = []
+    for issue in threads[:3]:
+        thread_comments += gh(f"/repos/{owner}/{repo}/issues/{issue['number']}/comments", {"per_page": 60}) or []
+    for comment in (comments if isinstance(comments, list) else []) + thread_comments:
+        if is_bot(comment.get("user")) or comment["html_url"] in seen or comment.get("created_at", "") < since:
             continue
+        seen.add(comment["html_url"])
         items.append({"author": comment["user"]["login"], "date": comment["created_at"][:10], "url": comment["html_url"],
-                      "text": (comment.get("body") or "")[:600]})
+                      "assoc": comment.get("author_association"), "text": (comment.get("body") or "")[:600]})
     items.sort(key=lambda i: i["date"], reverse=True)
     commit_authors = {}
     for commit in commits if isinstance(commits, list) else []:
@@ -372,7 +389,7 @@ def fetch_activity(owner, repo, fresh=False):
     activity = {
         "repo": f"{owner}/{repo}", "fetched": today(), "since": since[:10],
         "info": {k: info.get(k) for k in ("description", "stargazers_count", "created_at", "pushed_at", "archived", "owner")},
-        "items": items[:120],
+        "items": items[:250],
         "commit_authors": commit_authors,
         "releases": [{"tag": r.get("tag_name"), "author": (r.get("author") or {}).get("login"), "date": (r.get("published_at") or "")[:10],
                       "url": r.get("html_url"), "bot": is_bot(r.get("author"))} for r in releases if isinstance(r, dict)],
@@ -417,8 +434,11 @@ Signal types:
 - control_handover: someone is given, offered or asks for commit, merge, release or maintainer rights.
 
 Most messages are ordinary bug reports, patches and questions. Do NOT flag them. NOT pressure: a polite
-"any update?", bumping or rebasing your own pull request, asking for a review. NOT handover: asking to collaborate
-on a fork or a branch, or a CI/bot account. NOT burnout: a user saying they no longer use the project.
+"any update?" or "any chance this gets merged?", bumping or rebasing your own pull request, asking for a review,
+offering to help, closing or giving up on your own pull request. Pressure criticizes the maintainer or the pace of
+the whole project, or demands a new maintainer. NOT handover: taking over a single pull request or issue, asking
+to collaborate on a fork or a branch, or a CI/bot account; a handover is about rights over the whole project.
+NOT burnout: "I'll get to it when I have time" about one item, or a user saying they no longer use the project.
 Only flag clear cases. For each flag give the item number, the type, an EXACT quote copied from that
 item (one sentence, verbatim) and a short reason. Return an empty list if nothing qualifies."""
 
@@ -460,7 +480,7 @@ def tag_items(items, model=CHAT_MODEL):
             continue
         item = items[n]
         kept.append({"type": s["type"], "quote": quote, "why": s.get("why", ""), "author": item["author"],
-                     "date": item["date"], "url": item["url"], "strength": 1.0})
+                     "date": item["date"], "url": item["url"], "strength": 1.0, "assoc": item.get("assoc")})
     return kept, rejected
 
 
@@ -566,6 +586,7 @@ def xz_similar(items):
                 best = max(((r, cosine(v, rv)) for r, rv in refs), key=lambda x: x[1])
             if best[1] >= SIM_THRESHOLD:
                 found.append({"type": "xz_similarity", "quote": item["text"][:240].strip(), "author": item["author"],
+                              "assoc": item.get("assoc"),
                               "date": item["date"], "url": item["url"], "strength": 1.0, "similarity": round(best[1], 3),
                               "why": f"Reads like the 2022 xz email by {best[0]['author']}: \"{best[0]['text'][:140]}\""})
     finally:
@@ -592,9 +613,23 @@ def score(signals, item_count):
     return {"score": total, "level": level, "label": level, "breakdown": per, "combo": combo}
 
 
+KEYWORDS = re.compile(r"maintain|step(ping)? (down|back)|no (longer )?(have )?time|burn(ed|t)? ?out|abandon|\bdead\b|"
+                      r"take over|taking over|hand(ing)? over|new owner|commit (access|rights)|merge rights|release rights|"
+                      r"collaborator|co-?maintainer|looking for help|transfer (the )?(repo|project|ownership)", re.I)
+MAINTAINER_ROLES = {"OWNER", "MEMBER", "COLLABORATOR"}
+NEWCOMER_ROLES = {"NONE", "FIRST_TIME_CONTRIBUTOR", "FIRST_TIMER"}
+
+
+def select_items(items, limit=60):
+    """Maintainer-related messages first (by keyword), then the newest. Keeps model calls small."""
+    keyed = [i for i in items if KEYWORDS.search(i["text"])][:40]
+    rest = [i for i in items if i not in keyed][:limit - len(keyed)]
+    return sorted(keyed + rest, key=lambda i: i["date"])
+
+
 def analyze_dependency(dep, fresh=False):
     out = dict(dep)
-    found = resolve(dep["ecosystem"], dep["package"])
+    found = tuple(dep["repo"].split("/")) if dep.get("repo") else resolve(dep["ecosystem"], dep["package"])
     if not found:
         out.update(repo=None, score=None, level="unknown", label="not enough data", signals=[],
                    note="No public GitHub source repo listed in the registry.")
@@ -603,9 +638,17 @@ def analyze_dependency(dep, fresh=False):
     out["repo"] = f"{owner}/{repo}"
     activity = fetch_activity(owner, repo, fresh=fresh)
     items = activity["items"]
-    signals, rejected = tag_items(items[:60])
+    chosen = select_items(items)
+    signals, rejected = tag_items(chosen)
     maintainers = {c["login"] for c in activity["contributors"][:5]} | {activity["info"].get("owner")}
+    maintainers |= {i["author"] for i in items if i.get("assoc") in MAINTAINER_ROLES}
     for s in signals:  # code adjusts strength from facts, not from the model
+        if s["type"] == "pressure_campaign":
+            if s.get("assoc") in NEWCOMER_ROLES:
+                s["note"] = "no prior contributions to this repo"
+            else:  # in xz the pressure came from brand-new names; a known contributor's nudge counts half
+                s["strength"] = 0.5
+                s["note"] = "half weight: a known contributor"
         if s["type"] == "maintainer_burnout" and s["author"] not in maintainers:
             s["strength"] = 0
             s["note"] = "not counted: not from a maintainer"
@@ -622,10 +665,14 @@ def analyze_dependency(dep, fresh=False):
             if s["author"] == login and s["type"] == "pressure_campaign" and created:
                 s["account_created"] = created
                 if (dt.date.fromisoformat(s["date"]) - dt.date.fromisoformat(created)).days < 365:
-                    s["strength"] = 1.5
+                    s["strength"] = 1.5 if s.get("assoc") in NEWCOMER_ROLES else 0.75
                     s["note"] = "account less than a year old"
     signals += handover_from_releases(activity)
-    signals += xz_similar(items[:60])
+    # a maintainer's own words are not a pressure campaign, however they read
+    tagged = {s["url"] for s in signals}  # one message counts once
+    # as in xz, where the pressure came from brand-new names, only newcomers' messages are compared
+    signals += [s for s in xz_similar(chosen) if s["author"] not in maintainers and s["url"] not in tagged
+                and s.get("assoc") in NEWCOMER_ROLES]
     out["signals"] = sorted(signals, key=lambda s: s["date"])
     out["rejected_quotes"] = rejected
     out["item_count"] = len(items)
@@ -657,22 +704,18 @@ def handover_from_releases(activity):
 
 
 def adopt_card(activity, signals):
-    commits = activity["commit_authors"]
+    """Shown only when a maintainer said publicly they are stretched thin. Links where they said it."""
+    asks = [x for x in signals if x["type"] == "maintainer_burnout" and x.get("strength", 1) > 0]
+    if not asks:
+        return None
+    ask = asks[-1]
+    commits = {k: v for k, v in activity["commit_authors"].items() if not re.search(r"bot|automation", k, re.I)}
     total = sum(commits.values())
-    if not total:
-        return None
-    commits = {k: v for k, v in commits.items() if not re.search(r"bot|automation|dependabot|renovate", k, re.I)}
-    total = sum(commits.values())
-    if not total:
-        return None
-    login, count = max(commits.items(), key=lambda kv: kv[1])
-    share = count / total
-    burnout = any(s["type"] == "maintainer_burnout" and s.get("strength", 1) > 0 for s in signals)
-    if share < 0.6 and not burnout:
-        return None
-    return {"login": login, "share": round(share, 2), "commits": count, "total_commits": total,
-            "avatar": f"https://github.com/{login}.png?size=80", "funding": activity["funding"],
-            "help_wanted": activity["help_wanted"], "burnout": burnout}
+    mine = commits.get(ask["author"], 0)
+    return {"login": ask["author"], "asked_on": ask["date"], "quote": ask["quote"], "url": ask["url"],
+            "share": round(mine / total, 2) if total else None, "commits": mine, "total_commits": total,
+            "avatar": f"https://github.com/{ask['author']}.png?size=80", "funding": activity["funding"],
+            "help_wanted": activity["help_wanted"]}
 
 
 def scan(repo_text, fresh=False):
@@ -681,6 +724,8 @@ def scan(repo_text, fresh=False):
         raise HTTPException(400, "Paste a GitHub repo, like https://github.com/owner/name.")
     owner, repo = found
     deps, skipped = find_deps(owner, repo)
+    deps = [{"ecosystem": "github", "package": f"{repo} (this repo)", "source": "the repo you pasted",
+             "repo": f"{owner}/{repo}"}] + deps
     with ThreadPoolExecutor(6) as pool:
         results = list(pool.map(lambda d: analyze_dependency(d, fresh), deps))
     order = {"red": 0, "yellow": 1, "green": 2, "unknown": 3}
