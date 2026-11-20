@@ -38,6 +38,10 @@
   .btn { border:1px solid var(--line2); background:var(--panel2); border-radius:8px; padding:7px 14px; cursor:pointer; font-size:13px; white-space:nowrap; }
   .btn.go { background:var(--green); border-color:var(--green); color:#04140b; font-weight:600; }
   .btn:disabled { opacity:.55; cursor:wait; }
+  .examples { margin-left:auto; max-width:230px; background:var(--panel); color:var(--dim); border:1px solid var(--line2); border-radius:9px;
+    padding:7px 10px; font:13px "IBM Plex Sans", sans-serif; cursor:pointer; }
+  .examples:hover, .examples:focus { color:var(--text); border-color:var(--green); }
+  .examples + .search { margin-left:0; }
   .iconbtn { width:34px; height:34px; display:grid; place-items:center; border-radius:9px; border:1px solid var(--line2); background:var(--panel); cursor:pointer; color:var(--dim); }
   .iconbtn:hover { color:var(--green); border-color:var(--green); }
 
@@ -131,6 +135,7 @@
       <button id="tab-scan" class="on" onclick="tab('scan')">Dependencies</button>
       <button id="tab-replay" onclick="tab('replay')">xz replay</button>
     </nav>
+    <select class="examples" id="examples" aria-label="Fill in an example repo" onchange="pickExample(this)"></select>
     <form class="search" onsubmit="event.preventDefault(); runScan()">
       <input id="repo" aria-label="GitHub repo to scan" placeholder="Paste a GitHub repo, like github.com/owner/name" value="https://github.com/icloud-photos-downloader/icloud_photos_downloader">
       <button class="btn go" id="scanbtn" type="submit">Scan</button>
@@ -214,6 +219,23 @@ const TCOLOR = Object.fromEntries(TYPES.map(t => [t[0], t[2]]));
 const TNAME = Object.fromEntries(TYPES.map(t => [t[0], t[1]]));
 const LEVEL_NAME = {green:'Low', yellow:'Watch', red:'High', unknown:'Not enough data'};
 const DAY = 86400000;
+
+// Repos that show each side of the product; every flag in them was checked against its source.
+const EXAMPLES = [
+  ['binbin2000/icloudpd-manager', 'an app with one library in trouble'],
+  ['icloud-photos-downloader/icloud_photos_downloader', 'maintainers asking for help'],
+  ['tzezar/datagrid', 'owner out of time, with sponsor links'],
+  ['miyuchina/mistletoe', 'an open, healthy handover'],
+  ['akamai-developers/akamai-workshop-seattle-hackathon', 'all low, and not enough data'],
+];
+document.getElementById('examples').innerHTML = '<option value="">Try an example</option>'
+  + EXAMPLES.map(([r, d]) => `<option value="${esc(r)}">${esc(r.split('/')[1])}: ${esc(d)}</option>`).join('');
+function pickExample(sel) {
+  if (!sel.value) return;
+  $('repo').value = 'https://github.com/' + sel.value;
+  sel.value = '';  // back to "Try an example", so the same one can be picked again
+  $('scanbtn').focus();
+}
 let report = null, selected = 0, replay = null, rp = null, renderRun = 0, mapRun = 0, replayRun = 0;
 const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const SWEEP_MS = 1800;  // one pass of the scan line over the conversation map

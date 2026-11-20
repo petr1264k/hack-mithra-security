@@ -86,20 +86,21 @@ which for xz was about two years before the backdoor. It flags situations, never
 people, shows the evidence behind every flag, and ends with "adopt a maintainer":
 well-supported maintainers are the real defence.
 
-Demo (each saved scan opens straight from its link, with no live scan):
-1. http://172.232.189.84/#scan=50 binbin2000/icloudpd-manager, a small app. 14 of its
-   16 dependencies score low; its icloudpd library scores high (60). That project's
-   maintainers posted "Looking for new MAINTAINER for the project" and "I'm very busy
-   at the moment and don't have much time for the project".
-2. http://172.232.189.84/#scan=46 tzezar/datagrid scores high (60). The owner wrote
-   "I no longer have enough time to actively maintain or develop this project". The
-   adopt-a-maintainer card links to the owner's GitHub Sponsors and Buy Me a Coffee.
-3. http://172.232.189.84/#scan=35 mistletoe scores watch (50): a maintainer stepping
-   back and an open handover to a known contributor, with no pressure from strangers.
-4. http://172.232.189.84/#scan=38 the workshop repo. Its 7 dependencies score low,
+Demo (live scans: pick a repo from "Try an example" beside the search box, press Scan):
+1. binbin2000/icloudpd-manager, a small app. 14 of its 16 dependencies score low; its
+   icloudpd library scores high (60). That project's maintainers posted "Looking for
+   new MAINTAINER for the project" and "I'm very busy at the moment and don't have
+   much time for the project".
+2. tzezar/datagrid scores high (60). The owner wrote "I no longer have enough time to
+   actively maintain or develop this project". The adopt-a-maintainer card links to
+   the owner's GitHub Sponsors and Buy Me a Coffee.
+3. miyuchina/mistletoe scores watch (50): a maintainer stepping back and an open
+   handover to a known contributor, with no pressure from strangers.
+4. akamai-developers/akamai-workshop-seattle-hackathon. Its 7 dependencies score low,
    and the repo itself shows "not enough data".
-5. http://172.232.189.84/#replay then Play. The risk climbs as the 2022 pressure
-   emails arrive and turns red in May 2022, 21 months before the backdoor shipped.
+5. xz replay tab, Play. The risk climbs as the 2022 pressure emails arrive and turns
+   red in May 2022, 21 months before the backdoor shipped.
+Every scan is saved; http://172.232.189.84/#scan=<id> opens one again.
 
 Known limits:
 - Reads the last 12 months, and at most 60 messages per project per scan
