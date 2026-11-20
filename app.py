@@ -676,6 +676,8 @@ def analyze_dependency(dep, fresh=False):
     out["signals"] = sorted(signals, key=lambda s: s["date"])
     out["rejected_quotes"] = rejected
     out["item_count"] = len(items)
+    out["read_count"] = len(chosen)
+    out["item_dates"] = [i["date"] for i in items]  # for the dashboard's week-by-week map
     out.update(score(signals, len(items) + len(activity["releases"])))
     out["adopt"] = adopt_card(activity, signals)
     out["archive_key"] = activity.get("archive_key")
@@ -789,7 +791,7 @@ def run_replay():
     if not data:
         raise HTTPException(503, "The xz dataset is not loaded yet.")
     messages = sorted(data["messages"], key=lambda m: m["date"])
-    key = "replay_" + sha(json.dumps(messages) + TAG_PROMPT + json.dumps(WEIGHTS))
+    key = "replay_" + sha(json.dumps(messages) + TAG_PROMPT + json.dumps(WEIGHTS) + "v2")
     cached = cache_get(key) if "--fresh" not in sys.argv else None
     if cached:
         return cached
@@ -815,7 +817,7 @@ def run_replay():
                 days = (dt.date.fromisoformat(s["date"]) - dt.date.fromisoformat(first_seen[s["author"]])).days
                 if days < 180:
                     s["strength"] = 1.5
-                    s["note"] = f"first seen on the list {days} days earlier"
+                    s["note"] = "their first message on the list" if days == 0 else f"new to the list: first message {days} days earlier"
         all_signals += new
         window_start = months_between("2000-01", month)[-12]
         # burnout and pressure fade after 12 months; a handover of control is lasting, so it stays
