@@ -16,9 +16,11 @@ import hashlib
 import json
 import math
 import os
+import queue
 import re
 import subprocess
 import sys
+import threading
 import tomllib
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -30,7 +32,7 @@ import uvicorn
 from botocore.config import Config
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse
 from openai import OpenAI
 from pydantic import BaseModel
 
@@ -745,7 +747,9 @@ def adopt_card(activity, signals):
             "help_wanted": activity["help_wanted"]}
 
 
-def scan(repo_text, fresh=False):
+def scan(repo_text, fresh=False, events=None):
+    """events: optional callback that gets live progress (called from worker threads)."""
+    emit = events or (lambda event: None)
     found = parse_repo(repo_text)
     if not found:
         raise HTTPException(400, "Paste a GitHub repo, like https://github.com/owner/name.")
@@ -753,8 +757,16 @@ def scan(repo_text, fresh=False):
     deps, skipped = find_deps(owner, repo)
     deps = [{"ecosystem": "github", "package": f"{repo} (this repo)", "source": "the repo you pasted",
              "repo": f"{owner}/{repo}"}] + deps
+    emit({"step": "deps", "repo": f"{owner}/{repo}", "packages": [d["package"] for d in deps]})
+
+    def run(dep):
+        r = analyze_dependency(dep, fresh)
+        emit({"step": "dep", "package": dep["package"], "repo": r.get("repo"), "level": r["level"], "score": r["score"],
+              "read": r.get("read_count", 0), "items": r.get("item_count", 0), "rejected": r.get("rejected_quotes", 0),
+              "signals": sum(1 for s in r.get("signals", []) if s.get("strength", 1) > 0)})
+        return r
     with ThreadPoolExecutor(6) as pool:
-        results = list(pool.map(lambda d: analyze_dependency(d, fresh), deps))
+        results = list(pool.map(run, deps))
     me = f"{owner}/{repo}".lower()  # a monorepo can depend on its own package: score the repo once
     results = results[:1] + [r for r in results[1:] if (r.get("repo") or "").lower() != me]
     order = {"red": 0, "yellow": 1, "green": 2, "unknown": 3}
@@ -906,6 +918,31 @@ def api_scan(body: ScanRequest):
         return scan(body.repo, fresh=body.fresh)
     except RateLimited as error:
         raise HTTPException(429, str(error))
+
+
+@app.post("/api/scan/stream")
+def api_scan_stream(body: ScanRequest):
+    """The same scan, sent as one JSON line per step, so the page can show the real progress."""
+    if not parse_repo(body.repo):
+        raise HTTPException(400, "Paste a GitHub repo, like https://github.com/owner/name.")
+    events = queue.Queue()
+
+    def work():
+        try:
+            events.put({"step": "done", "report": scan(body.repo, fresh=body.fresh, events=events.put)})
+        except (HTTPException, RateLimited) as error:
+            events.put({"step": "error", "detail": getattr(error, "detail", None) or str(error)})
+        except Exception as error:  # report it in the stream: the page is already showing progress
+            events.put({"step": "error", "detail": f"The scan failed: {error}"})
+    threading.Thread(target=work, daemon=True).start()
+
+    def lines():
+        while True:
+            event = events.get()
+            yield json.dumps(event, default=str) + "\n"
+            if event["step"] in ("done", "error"):
+                return
+    return StreamingResponse(lines(), media_type="application/x-ndjson")
 
 
 @app.get("/api/scans")

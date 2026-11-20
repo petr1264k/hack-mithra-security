@@ -126,6 +126,8 @@
   .map .lit { opacity:1; transform:none; }
   .ghost { transition:fill 1.2s ease-out; }
   .ghost.ping { fill:#1c5537; transition:none; } .ghost.ping2 { fill:#2fd27a; transition:none; }
+  .ghost.rowdone { fill:#1a3a29; transition:fill .6s ease-out; }
+  .ghost.rowdone.lv-red { fill:#56202a; } .ghost.rowdone.lv-yellow { fill:#563d1a; } .ghost.rowdone.lv-unknown { fill:#1d2420; }
   .pin { opacity:0; transform:translateY(10px); transition:opacity .35s, transform .5s cubic-bezier(.2,1.5,.4,1); }
   .pin.lit { opacity:1; transform:none; }
   .strip polygon { transform-box:fill-box; transform-origin:center; transition:fill .5s ease-out, fill-opacity .5s ease-out; }
@@ -348,10 +350,10 @@ async function runScan() {
   const repo = $('repo').value.trim();
   if (!repo) return;
   $('scanbtn').disabled = true;
-  $('status').innerHTML = '<span class="spin"></span>Reading a year of public issues and comments for each dependency. About 20 seconds.';
+  $('status').innerHTML = '<span class="spin"></span>Finding the dependencies…';
   scanningMap();
   try {
-    report = await api('/api/scan', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({repo})});
+    report = await scanLive(repo);
     $('status').innerHTML = '';
     render(); loadRecent();
   } catch (e) {
@@ -407,16 +409,19 @@ function mapColumns(W) {
   return cols;
 }
 
-// While a scan runs: the line sweeps an empty map and the cells it passes flicker, as if being read.
-function scanningMap() {
-  const rows = 8, g = mapGeom(rows), run = ++mapRun;
+// While a scan runs: the line sweeps the map and the cells it passes flicker. With labels (the real
+// dependencies, sent by the server), each row fills in with its result as that project finishes.
+function scanningMap(labels) {
+  const rows = labels ? labels.length : 8, g = mapGeom(rows), run = ++mapRun;
   let svg = MAP_DEFS;
   for (let i = 0; i < rows; i++) {
-    svg += `<rect x="0" y="${(g.cy(i) - 3.5).toFixed(1)}" width="${58 + (i * 37) % 52}" height="7" rx="3.5" fill="#17221c"/>`;
-    for (let k = 0; k < g.W; k++) svg += hex(g.cx(k, i), g.cy(i), g.r * .9, '#17221c', `class="ghost" data-k="${k}"`);
+    svg += labels
+      ? `<text x="0" y="${(g.cy(i) + 3.5).toFixed(1)}" class="rowlabel" id="lrow${i}">${esc(labels[i].replace(' (this repo)', ' ★').slice(0, 15))}</text>`
+      : `<rect x="0" y="${(g.cy(i) - 3.5).toFixed(1)}" width="${58 + (i * 37) % 52}" height="7" rx="3.5" fill="#17221c"/>`;
+    for (let k = 0; k < g.W; k++) svg += hex(g.cx(k, i), g.cy(i), g.r * .9, '#17221c', `class="ghost" data-k="${k}" data-row="${i}"`);
   }
   $('map').innerHTML = `<svg viewBox="0 0 ${g.width.toFixed(0)} ${g.height.toFixed(0)}" role="img" aria-label="Scanning">${svg}${scanHead(g)}</svg>`;
-  $('maplegend').innerHTML = '<span><span class="spin"></span>Reading a year of public conversation</span>';
+  $('maplegend').innerHTML = `<span id="liveline"><span class="spin"></span>${labels ? `Reading the last 12 months of public conversation for ${rows} projects` : 'Finding the dependencies'}</span>`;
   if (REDUCED) return;
   const cols = mapColumns(g.W), head = $('mapHead'), period = 2600, t0 = performance.now();
   let last = -1;
@@ -426,6 +431,7 @@ function scanningMap() {
     head.setAttribute('transform', `translate(${x.toFixed(1)},0)`);
     if (c < last) last = -1;
     for (let j = last + 1; j <= c; j++) cols[j].forEach(e => {
+      if (e.classList.contains('rowdone')) return;
       e.classList.add(Math.random() < .22 ? 'ping2' : 'ping');
       setTimeout(() => e.classList.remove('ping', 'ping2'), 120);
     });
@@ -433,6 +439,41 @@ function scanningMap() {
     requestAnimationFrame(frame);
   };
   requestAnimationFrame(frame);
+}
+
+// One project finished: tint its row by level, show its score, and say what was read.
+function liveDone(e, i, done, total) {
+  $('map').querySelectorAll(`.ghost[data-row="${i}"]`).forEach(h => h.classList.add('rowdone', 'lv-' + e.level));
+  const label = $('lrow' + i);
+  if (label) label.insertAdjacentHTML('beforeend', `<tspan dx="5" style="fill:${COLOR[e.level]}">${e.score ?? '—'}</tspan>`);
+  const n = (k, word) => `${k} ${word}${k === 1 ? '' : 's'}`;
+  if ($('liveline')) $('liveline').innerHTML = `<span class="spin"></span>${esc(e.package.replace(' (this repo)', ''))}: read ${e.read} of ${n(e.items, 'message')}, ${n(e.signals, 'flag')} kept, ${n(e.rejected, 'quote')} rejected. ${done} of ${total} done`;
+}
+
+// Runs a scan and shows its real progress: the server sends one JSON line per step.
+async function scanLive(repo) {
+  const r = await fetch('/api/scan/stream', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({repo})});
+  if (!r.ok || !r.body) { const b = await r.json().catch(() => ({})); throw new Error(b.detail || r.statusText); }
+  const reader = r.body.getReader(), dec = new TextDecoder();
+  let buf = '', packages = [], done = 0;
+  for (;;) {
+    const {value, done: end} = await reader.read();
+    if (value) buf += dec.decode(value, {stream: true});
+    let nl;
+    while ((nl = buf.indexOf('\n')) >= 0) {
+      const line = buf.slice(0, nl).trim(); buf = buf.slice(nl + 1);
+      if (!line) continue;
+      const e = JSON.parse(line);
+      if (e.step === 'deps') {
+        packages = e.packages; scanningMap(packages);
+        $('status').innerHTML = `<span class="spin"></span>Found ${packages.length - 1} dependencies of ${esc(e.repo)}. Reading each one's public conversation.`;
+      } else if (e.step === 'dep') liveDone(e, packages.indexOf(e.package), ++done, packages.length);
+      else if (e.step === 'done') return e.report;
+      else if (e.step === 'error') throw new Error(e.detail);
+    }
+    if (end) break;
+  }
+  throw new Error('The scan stopped before it finished. Try again.');
 }
 
 // One pass of the scan line; each week lights up as the line crosses it.
